@@ -1,0 +1,70 @@
+const wdio = require("webdriverio");
+
+const caps = {
+  platformName: "Android",
+  "appium:deviceName": "3201285bf219844a", // ID del dispositivo
+  "appium:automationName": "UiAutomator2",
+  "appium:noReset": true,
+  "appium:newCommandTimeout": 300,
+  "appium:appPackage": "com.zhiliaoapp.musically",
+  "appium:appActivity": "com.ss.android.ugc.aweme.splash.SplashActivity",
+};
+
+async function testAppium() {
+  let driver;
+
+  try {
+    driver = await wdio.remote({
+      hostname: "127.0.0.1",
+      port: 4723,
+      path: "/",
+      capabilities: caps,
+    });
+
+    console.log("✅ Conexión exitosa con el dispositivo y Appium.");
+    // Aquí puedes interactuar con la app que has abierto
+
+    //Ejecutar la funcion de scroll 5 veces
+    for (let i = 0; i < 5; i++) {
+      console.log(`🔄 Scroll ${i + 1}...`);
+
+      // Haciendo scroll (deslizando hacia arriba)
+      await scrollTikTok(driver);
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Pausa entre scrolls
+    }
+  } catch (error) {
+    console.error("❌ Error al conectar con Appium:", error);
+  } finally {
+    if (driver) {
+      try {
+        await driver.deleteSession();
+        console.log("🔄 Sesión cerrada correctamente.");
+      } catch (error) {
+        console.error("⚠️ Error al cerrar la sesión:", error);
+      }
+    }
+  }
+}
+
+async function scrollTikTok(driver) {
+  console.log("📜 Haciendo scroll en TikTok...");
+
+  await driver.performActions([
+    {
+      type: "pointer",
+      id: "finger1",
+      parameters: { pointerType: "touch" },
+      actions: [
+        { type: "pointerMove", duration: 0, x: 240, y: 640 },
+        { type: "pointerDown", button: 0 },
+        { type: "pause", duration: 100 }, // Pequeña pausa para simular el gesto real
+        { type: "pointerMove", duration: 300, x: 240, y: 160 }, // Movimiento de scroll
+        { type: "pointerUp", button: 0 },
+      ],
+    },
+  ]);
+
+  console.log("✅ Scroll realizado con éxito.");
+}
+
+testAppium();

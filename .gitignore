@@ -1,0 +1,34 @@
+# Node.js dependencies
+/node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build output
+/build/
+/dist/
+/.out/
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files and cache
+/.cache/
+/.next/
+/.vite/
+/.parcel-cache/
+/.turbo/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+/.vscode/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

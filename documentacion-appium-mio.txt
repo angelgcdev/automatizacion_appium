@@ -1,0 +1,144 @@
+-> Comando para ver el appPackage y el aaActivity del la aplicacion a abrir:
+	->opcion1: adb shell dumpsys window windows | findstr "mCurrentFocus"
+	->opcion2: adb shell dumpsys window | findstr "mCurrentFocus"
+
+
+  
+  //*********************************************************
+
+  Para correr appium desde terminal o Appium Server IU
+  Appium terminal: path: "/",
+  Appium Server UI: path: "/wd/hub",
+
+
+  //*********************************************************
+  -> app SHIZUKU en el dispositivo movil para dar privilegios como el WRITE_SECURE_SETTINGS
+    con esta aplicacion movil se le esta dando permisos de root sin tener que rootear el 
+    dispositivo
+  ->ejecutar el comando en cmd: 
+  C:\Users\USUARIO>adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
+  
+Para android 7 y 6 solamente habilitar en opciones de desarrollador la --> Depuracion USB
+
+Para android 14 habilitar en opciones de desarrollador las siguentes opciones:
+  -> Depuracion USB
+  -> Instalar via USB
+  -> Depuracion USB(Ajustes de seguridad)
+
+//*******************************************************
+
+
+//-----------------------------------------------------------------------------
+Codigo de prueba con un dispositivo :
+
+const wdio = require("webdriverio");
+
+const caps = {
+  platformName: "Android",
+  "appium:udid": "3201285bf219844a", // ID del dispositivo
+  "appium:automationName": "UiAutomator2",
+  "appium:noReset": true,
+  "appium:newCommandTimeout": 300, // Espera 5 minutos antes de cerrar por inactividad
+};
+
+async function testAppium() {
+  let driver;
+
+  try {
+    driver = await wdio.remote({
+      hostname: "127.0.0.1",
+      port: 4723,
+      path: "/",
+      capabilities: caps,
+    });
+
+    console.log("✅ Conexión exitosa con el dispositivo y Appium.");
+    const deviceName = await driver.capabilities.deviceName;
+    console.log("📱 Dispositivo conectado:", deviceName);
+
+    // 🏗️ Aquí puedes agregar interacciones con la app
+
+    const screenSize = await driver.getWindowRect();
+    console.log("SCREEN SIZE:", screenSize); // { width: 1080, height: 1920, x: 0, y: 0 }
+  } catch (error) {
+    console.error("❌ Error al conectar con Appium:", error);
+  } finally {
+    if (driver) {
+      try {
+        await driver.deleteSession();
+        console.log("🔄 Sesión cerrada correctamente.");
+      } catch (error) {
+        console.error("⚠️ Error al cerrar la sesión:", error);
+      }
+    }
+  }
+}
+
+testAppium();
+
+//*****************************************************
+Codigo de prueba para dos 0 mas dispositivos:
+
+const wdio = require("webdriverio");
+
+// 🔹 Lista de dispositivos a probar
+const dispositivos = ["3201285bf219844a", "ffbc3fc2"];
+
+// 🔹 Función para probar un dispositivo específico
+async function probarDispositivo(udid) {
+  // Configuración de Appium
+  const capacidades = {
+    platformName: "Android",
+    "appium:udid": udid, // Se conecta al dispositivo específico
+    "appium:automationName": "UiAutomator2",
+    "appium:noReset": true,
+    "appium:newCommandTimeout": 300,
+  };
+
+  let driver;
+
+  try {
+    console.log(`🚀 Conectando al dispositivo: ${udid}`);
+
+    // Conexión con Appium
+    driver = await wdio.remote({
+      hostname: "127.0.0.1",
+      port: 4723,
+      path: "/",
+      capabilities: capacidades,
+    });
+
+    console.log("✅ Conexión exitosa con el dispositivo.");
+
+    // Obtener y mostrar información del dispositivo
+    const nombreDispositivo = await driver.capabilities.deviceName;
+    console.log(`📱 Dispositivo conectado: ${nombreDispositivo}`);
+
+    const tamañoPantalla = await driver.getWindowRect();
+    console.log(`📏 Tamaño de pantalla:`, tamañoPantalla);
+  } catch (error) {
+    console.error(`❌ Error al conectar con el dispositivo ${udid}:`, error);
+  } finally {
+    if (driver) {
+      try {
+        await driver.deleteSession();
+        console.log(`🔄 Sesión cerrada para el dispositivo ${udid}`);
+      } catch (error) {
+        console.error(
+          `⚠️ Error al cerrar la sesión para el dispositivo ${udid}:`,
+          error
+        );
+      }
+    }
+  }
+}
+
+// 🔹 Ejecutar pruebas en los dispositivos uno por uno
+async function ejecutarPruebas() {
+  for (const udid of dispositivos) {
+    await probarDispositivo(udid);
+  }
+}
+
+// 🔥 Iniciar pruebas
+ejecutarPruebas();
