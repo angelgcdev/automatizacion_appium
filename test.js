@@ -19,6 +19,27 @@ const humanLikeDelay = async () => {
   await new Promise((resolve) => setTimeout(resolve, delay));
 };
 
+// Función para hacer clic en el primer elemento disponible
+const clickOnAnyElementSelector = async (driver, selectors) => {
+  try {
+    // Intentamos hacer click en el primer selector disponible
+    for (let selector of selectors) {
+      const element = await driver.$(selector);
+
+      // Esperar hasta que el elemento esté visible
+      if (await element.isDisplayed()) {
+        await humanLikeDelay(); // Retraso antes de hacer clic
+        await element.click();
+        console.log(`✅ Click en el elemento: ${selector}`);
+        return;
+      }
+    }
+    console.log("❌ Ningún elemento fue encontrado.");
+  } catch (error) {
+    console.error("❌ Error al hacer click:", error.message);
+  }
+};
+
 //Funcion para hacer click en el elemento
 const clickOnElementSelector = async (driver, elementSelector) => {
   try {
@@ -131,8 +152,21 @@ const testAppium = async () => {
 
     await humanLikeDelay(); // Retraso antes de hacer clic
 
+    //Intentamos que la aplicacion este completamente cargada antes de hacer click
+    try {
+      const splashScreen = await driver.$("id:com.zhiliaoapp.musically:id/jn_");
+      await splashScreen.waitForDisplayed({ timeout: 30000 });
+      console.log("✅ La aplicación ha cargado correctamente.");
+    } catch (error) {
+      console.error("❌ No se pudo cargar correctamente la aplicación:", error);
+    }
+
     //Llamada a la función que hace click en el buscador
-    await clickOnElementSelector(driver, "id:com.zhiliaoapp.musically:id/gky");
+    await clickOnAnyElementSelector(driver, [
+      'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/gky").instance(1)',
+      "id:com.zhiliaoapp.musically:id/gky",
+    ]);
+    // await clickOnElementSelector(driver, "id:com.zhiliaoapp.musically:id/gky");
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
