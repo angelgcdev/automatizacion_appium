@@ -1,21 +1,48 @@
 import { remote } from "webdriverio";
 
-//**Variables */
+//**Variables Globales*/
 const caps = {
   platformName: "Android",
   "appium:udid": "ffbc3fc2", // ID del dispositivo
   "appium:automationName": "UiAutomator2",
   "appium:noReset": true,
-  "appium:newCommandTimeout": 60,
+  "appium:newCommandTimeout": 300,
   "appium:appPackage": "com.zhiliaoapp.musically",
   "appium:appActivity": "com.ss.android.ugc.aweme.splash.SplashActivity",
+  "appium:autoLaunch": true, // Asegura que la app se inicie automáticamente
 };
+
+const SELECTORS = {
+  splashScreen: 'android=new UiSelector().text("Inicio")',
+  searchButton1: [
+    'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/gky").instance(1)',
+    "id:com.zhiliaoapp.musically:id/gky",
+    'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/gll").instance(1)',
+  ],
+  searchInput: "id:com.zhiliaoapp.musically:id/eu9",
+  searchButton2: [
+    "id:com.zhiliaoapp.musically:id/sjd",
+    "id:com.zhiliaoapp.musically:id/skb",
+  ],
+  usersButton: ["accessibility id:Usuarios"],
+  firstUser: [
+    'android=new UiSelector().className("android.widget.Button").instance(0)',
+  ],
+  firstVideo: [
+    'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/cover").instance(1)',
+  ],
+  likeButton: ["accessibility id:Me gusta"],
+  addVideo: ["id:com.zhiliaoapp.musically:id/f31"],
+};
+
+const TEXT_TO_SEARCH = "angelgcdev";
+const NUM_VIEWS = 5;
 
 //**Funciones */
 
 //funcion para hacer retraso aleatorio
 const humanLikeDelay = async () => {
-  const delay = getRandomDelay(500, 1500);
+  const delay = getRandomDelay(500, 2000);
   await new Promise((resolve) => setTimeout(resolve, delay));
 };
 
@@ -68,7 +95,7 @@ const clickOnElementSelector = async (driver, elementSelector) => {
 const writeInSearchInput = async (driver, textToSearch) => {
   try {
     //Localizar el input del buscador
-    const searchInput = await driver.$("id:com.zhiliaoapp.musically:id/etg");
+    const searchInput = await driver.$(SELECTORS.searchInput);
 
     await driver.waitUntil(async () => searchInput.isDisplayed(), {
       timeout: 10000, // Esperar hasta 10 segundos
@@ -81,9 +108,30 @@ const writeInSearchInput = async (driver, textToSearch) => {
     await humanLikeDelay(); // Retraso antes de hacer clic
 
     //Hacer click en el boton buscar
-    await clickOnElementSelector(driver, "id:com.zhiliaoapp.musically:id/sjd");
+    await clickOnAnyElementSelector(driver, SELECTORS.searchButton2);
   } catch (error) {
     console.error("❌ Error al escribir en el cuadro de búsqueda.", error);
+  }
+};
+
+//Funcion para las vistas
+const generateViews = async (driver, numViews) => {
+  for (let i = 0; i < numViews; i++) {
+    console.log(`🔄 Scroll ${i + 1}...`);
+
+    await driver.pause(getRandomDelay(200, 300));
+
+    // Haciendo scroll hacia abajo
+    await scrollUpTikTok(driver);
+    await new Promise((resolve) =>
+      setTimeout(resolve, getRandomDelay(200, 300))
+    ); // Pausa de 500ms
+
+    // Haciendo scroll hacia arriba
+    await scrollDownTikTok(driver);
+    await new Promise((resolve) =>
+      setTimeout(resolve, getRandomDelay(200, 300))
+    ); // Pausa de 500ms
   }
 };
 
@@ -154,72 +202,66 @@ const testAppium = async () => {
 
     //Intentamos que la aplicacion este completamente cargada antes de hacer click
     try {
-      const splashScreen = await driver.$("id:com.zhiliaoapp.musically:id/jn_");
+      const splashScreen = await driver.$(SELECTORS.splashScreen);
       await splashScreen.waitForDisplayed({ timeout: 30000 });
       console.log("✅ La aplicación ha cargado correctamente.");
     } catch (error) {
       console.error("❌ No se pudo cargar correctamente la aplicación:", error);
+
+      // Cerramos la sesión antes de salir
+      if (driver) {
+        await driver.deleteSession();
+      }
+
+      console.log("🚨 Cerrando proceso porque la aplicación no se cargó.");
+      process.exit(1); //Detenemos completamete la ejecución
     }
 
     //Llamada a la función que hace click en el buscador
-    await clickOnAnyElementSelector(driver, [
-      'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/gky").instance(1)',
-      "id:com.zhiliaoapp.musically:id/gky",
-    ]);
-    // await clickOnElementSelector(driver, "id:com.zhiliaoapp.musically:id/gky");
+    await clickOnAnyElementSelector(driver, SELECTORS.searchButton1);
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
 
     // Escribir en el input
-    const searchText = "descargas41";
-    await writeInSearchInput(driver, searchText);
+    await writeInSearchInput(driver, TEXT_TO_SEARCH);
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
 
     //Hacer click en la pestaña 'Usuarios'
-    await clickOnElementSelector(driver, "accessibility id:Usuarios");
+    await clickOnAnyElementSelector(driver, SELECTORS.usersButton);
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
 
     //Hacer click en el primer usuario de la busqueda
-    await clickOnElementSelector(
-      driver,
-      'android=new UiSelector().className("android.widget.Button").instance(0)'
-    );
+    await clickOnAnyElementSelector(driver, SELECTORS.firstUser);
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
 
     //Hacer click en el primer video del usuario
-    await clickOnElementSelector(
-      driver,
-      'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/cover").instance(2)'
-    );
+    await clickOnAnyElementSelector(driver, SELECTORS.firstVideo);
 
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
 
-    //Realizar scrolls muchos scrolls
-    for (let i = 0; i < 10; i++) {
-      console.log(`🔄 Scroll ${i + 1}...`);
+    //Generar vistas
+    await generateViews(driver, NUM_VIEWS);
 
-      await driver.pause(getRandomDelay(200, 300));
+    // Esperar un momento para dar tiempo a la transición
+    await humanLikeDelay(); // Retraso antes de hacer clic
 
-      // Haciendo scroll hacia abajo
-      await scrollUpTikTok(driver);
-      await new Promise((resolve) =>
-        setTimeout(resolve, getRandomDelay(200, 300))
-      ); // Pausa de 500ms
+    //Click en 'Me Gusta'
+    await clickOnAnyElementSelector(driver, SELECTORS.likeButton);
 
-      // Haciendo scroll hacia arriba
-      await scrollDownTikTok(driver);
-      await new Promise((resolve) =>
-        setTimeout(resolve, getRandomDelay(200, 300))
-      ); // Pausa de 500ms
-    }
+    // Esperar un momento para dar tiempo a la transición
+    await humanLikeDelay(); // Retraso antes de hacer clic
+
+    //Añadir o guardar video
+    await clickOnAnyElementSelector(driver, SELECTORS.addVideo);
+
     // Esperar un momento para dar tiempo a la transición
     await humanLikeDelay(); // Retraso antes de hacer clic
   } catch (error) {

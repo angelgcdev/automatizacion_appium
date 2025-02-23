@@ -1,0 +1,27 @@
+Para realizar la verificacion de Me gusta 
+
+Buscar por	Selector
+
+accessibility id  Dar me gusta al vídeo. 88,1 mil me gusta
+
+-android uiautomator  new UiSelector().description("Dar me gusta al vídeo. 88,1 mil me gusta")
+(docs)
+
+xpath  //android.widget.Button[@content-desc="Dar me gusta al vídeo. 88,1 mil me gusta"]
+
+
+
+Buscar por	Selector
+
+accessibility id  Vídeo con me gusta
+
+-android uiautomator  new UiSelector().description("Vídeo con me gusta")
+(docs)
+
+xpath  //android.widget.Button[@content-desc="Vídeo con me gusta"]
+
+///******************************************************************////////
+Para Guardar video
+
+-android uiautomator  new UiSelector().resourceId("com.zhiliaoapp.musically:id/cw1").instance(3)
+(docs)

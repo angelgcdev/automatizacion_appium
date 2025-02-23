@@ -16,9 +16,8 @@
     con esta aplicacion movil se le esta dando permisos de root sin tener que rootear el 
     dispositivo
   ->ejecutar el comando en cmd: 
-  C:\Users\USUARIO>adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
-
-                   adb shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh
+  C:\Users\USUARIO>             
+                    adb shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh
   
 Para android 7 y 6 solamente habilitar en opciones de desarrollador la --> Depuracion USB
 
