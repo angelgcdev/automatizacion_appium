@@ -1,7 +1,7 @@
 //**Configuracion Global*/
 const CAPABILITIES = {
   platformName: "Android",
-  "appium:udid": "ffbc3fc2", // ID del dispositivo
+  // "appium:udid": "ffbc3fc2", // ID del dispositivo
   "appium:automationName": "UiAutomator2",
   "appium:noReset": true,
   "appium:newCommandTimeout": 300,
@@ -35,4 +35,6 @@ const SELECTORS = {
   addVideo: ["id:com.zhiliaoapp.musically:id/f31"],
 };
 
-export { CAPABILITIES, SELECTORS };
+const PORTS = [4723, 4724];
+
+export { CAPABILITIES, SELECTORS, PORTS };

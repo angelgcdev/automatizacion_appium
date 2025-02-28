@@ -3,7 +3,9 @@ import { humanLikeDelay } from "./utils/humanLikeDelay.js";
 import { clickOnAnyElementSelector } from "./utils/clickOnAnyElementSelector.js";
 import { writeInSearchInput } from "./utils/writeInSearchInput.js";
 import { generateViews } from "./utils/generateViews.js";
-import { CAPABILITIES, SELECTORS } from "./config.js";
+import { CAPABILITIES, SELECTORS, PORTS } from "./config.js";
+import { startAllServers } from "./utils/startAppiumServers.js";
+import { getConnectedDevices } from "./utils/getConnectedDevices.js";
 
 const addVideoSelector = "id:com.zhiliaoapp.musically:id/f31";
 const likeButtonSelector = "id:com.zhiliaoapp.musically:id/dt3";
@@ -11,27 +13,28 @@ const likeButtonSelector = "id:com.zhiliaoapp.musically:id/dt3";
 const TEXT_TO_SEARCH = "Escardi";
 const NUM_VIEWS = 5;
 
-//**Funciones */
-
 //**FUNCION PRINCIPAL */
-const testAppium = async () => {
+const testAppium = async (udid, port) => {
   let driver;
 
   try {
     driver = await remote({
       hostname: "127.0.0.1",
-      port: 4723,
+      port,
       // path: "/wd/hub", // Appium Server UI
       path: "/", // Appium terminal
-      capabilities: CAPABILITIES,
+      capabilities: {
+        ...CAPABILITIES,
+        "appium:udid": udid,
+      },
     });
 
-    console.log("✅ Conexión exitosa con el dispositivo y Appium.");
+    console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
 
     await humanLikeDelay(); // Retraso
 
     //abrir TikTok desde el Home
-    console.log("⏳ Abriendo TikTok en la pantalla de inicio...");
+    console.log(`⏳ [${udid}] Abriendo TikTok...`);
 
     await clickOnAnyElementSelector(driver, SELECTORS.tiktokIcon);
 
@@ -43,12 +46,15 @@ const testAppium = async () => {
 
       await driver.waitUntil(async () => await splashScreen.isExisting(), {
         timeout: 30000,
-        timeoutMsg: "La pantalla inicial de Tiktok no apareció a tiempo.",
+        timeoutMsg: `[${udid}] La pantalla inicial de TikTok no apareció a tiempo.`,
       });
 
-      console.log("✅ La aplicación ha cargado correctamente.");
+      console.log(`✅ [${udid}] Aplicación cargada correctamente.`);
     } catch (error) {
-      console.error("❌ No se pudo cargar correctamente la aplicación:", error);
+      console.error(
+        `${udid} ❌ No se pudo cargar correctamente la aplicación:`,
+        error
+      );
 
       // Cerramos la sesión antes de salir
       if (driver) {
@@ -99,17 +105,67 @@ const testAppium = async () => {
 
     await humanLikeDelay(); // Retraso antes de hacer clic
   } catch (error) {
-    console.error("❌ Error al conectar con Appium:", error);
+    console.error(`❌ [${udid}] Error en Appium:`, error);
   } finally {
     if (driver) {
       try {
         await driver.deleteSession();
-        console.log("🔄 Sesión cerrada correctamente.");
+        console.log(`🔄 [${udid}] Sesión cerrada correctamente.`);
       } catch (error) {
-        console.error("⚠️ Error al cerrar la sesión:", error);
+        console.error(`${udid} ⚠️ Error al cerrar la sesión:`, error);
       }
     }
   }
 };
 
-testAppium();
+// Ejecutar en múltiples dispositivos
+const runOnMultipleDevices = async () => {
+  try {
+    // Iniciar los servidores de Appium
+    console.log("⏳ Iniciando servidores de Appium...");
+    await startAllServers(PORTS);
+    console.log("✅ Todos los servidores de Appium iniciados.");
+
+    const devices = getConnectedDevices();
+    if (devices.length === 0) {
+      console.log("🚨 No se encontraron dispositivos conectados.");
+      return;
+    }
+
+    // Verificar que haya suficientes puertos
+    if (devices.length > PORTS.length) {
+      console.warn(
+        `⚠️ Hay más dispositivos (${devices.length}) que puertos disponibles (${PORTS.length}). Solo se usarán los primeros ${PORTS.length} dispositivos.`
+      );
+    }
+
+    const tasks = devices
+      .slice(0, PORTS.length)
+      .map((udid, index) => testAppium(udid, PORTS[index]));
+
+    console.log(`🚀 Ejecutando pruebas en ${tasks.length} dispositivos...`);
+    const results = await Promise.allSettled(tasks);
+
+    // Analizar resultados
+    results.forEach((result, index) => {
+      const udid = devices[index];
+      if (result.status === "fulfilled") {
+        console.log(`✅ [${udid}] Ejecución completada con éxito.`);
+      } else {
+        console.error(`❌ [${udid}] Falló con error:`, result.reason);
+      }
+    });
+
+    console.log("🏁 Pruebas finalizadas en todos los dispositivos.");
+  } catch (error) {
+    console.error(
+      "❌ Error al iniciar los servidores o ejecutar las pruebas:",
+      error
+    );
+  }
+};
+
+// Iniciar ejecución dentro de una función autoejecutable
+(async () => {
+  await runOnMultipleDevices();
+})();
