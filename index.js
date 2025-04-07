@@ -1,3 +1,4 @@
+//Importaciones de librerias y utilidades necesarias
 import { remote } from "webdriverio";
 import { humanLikeDelay } from "./utils/humanLikeDelay.js";
 import { clickOnAnyElementSelector } from "./utils/clickOnAnyElementSelector.js";
@@ -7,86 +8,49 @@ import { CAPABILITIES, SELECTORS, PORTS } from "./config.js";
 import { startAllServers } from "./utils/startAppiumServers.js";
 import { getConnectedDevices } from "./utils/getConnectedDevices.js";
 
-const addVideoSelector = "id:com.zhiliaoapp.musically:id/f31";
-const likeButtonSelector = "id:com.zhiliaoapp.musically:id/dt3";
-
-const TEXT_TO_SEARCH = "Escardi";
+//URL del video de TikTok
+const URL_VIDEO_TIKTOK =
+  "https://www.tiktok.com/@descargas41/video/7450510105642142982";
+//Numero de vistas a generar
 const NUM_VIEWS = 5;
 
-//**FUNCION PRINCIPAL */
-const testAppium = async (udid, port) => {
+//Función principal de automatización por dispositivo
+const tiktokAutomatizacion = async (udid, port) => {
   let driver;
 
   try {
+    //Conectar con el servidor Appium en el puerto correspondiente
     driver = await remote({
       hostname: "127.0.0.1",
       port,
-      // path: "/wd/hub", // Appium Server UI
+      // path: "/wd/hub", //si usas Appium Server UI
       path: "/", // Appium terminal
       capabilities: {
         ...CAPABILITIES,
-        "appium:udid": udid,
+        "appium:udid": udid, //UDID del dispositivo a controlar
       },
     });
 
     console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
 
-    await humanLikeDelay(); // Retraso
+    await humanLikeDelay(); // Espera aleatoria
 
-    //abrir TikTok desde el Home
-    console.log(`⏳ [${udid}] Abriendo TikTok...`);
+    // Abrir TikTok directamente al video usando su URL
+    console.log("⏳ Abriendo video directamente en TikTok...");
 
-    await clickOnAnyElementSelector(driver, SELECTORS.tiktokIcon);
+    //Usa el comando ADB (Android Debug Bridge) para ejecutar una acción de shel en el dispositivo
+    await driver.execute("mobile: shell", {
+      command: "am", // El comando para ejecutar actividades en Android
+      args: [
+        "start", // Indica que se va iniciar una actividad
+        "-a", // Acción de visualización (abrir algo)
+        "android.intent.action.VIEW", // Acción de visualización (abrir algo)
+        "-d", //la URL del video de TikTok a abrir
+        URL_VIDEO_TIKTOK, //la URL del video de TikTok a abrir
+      ],
+    });
 
-    await humanLikeDelay(); // Retraso
-
-    //Intentamos que la aplicacion este completamente cargada antes de hacer click
-    try {
-      const splashScreen = await driver.$(SELECTORS.splashScreen);
-
-      await driver.waitUntil(async () => await splashScreen.isExisting(), {
-        timeout: 30000,
-        timeoutMsg: `[${udid}] La pantalla inicial de TikTok no apareció a tiempo.`,
-      });
-
-      console.log(`✅ [${udid}] Aplicación cargada correctamente.`);
-    } catch (error) {
-      console.error(
-        `${udid} ❌ No se pudo cargar correctamente la aplicación:`,
-        error
-      );
-
-      // Cerramos la sesión antes de salir
-      if (driver) {
-        await driver.deleteSession();
-      }
-
-      console.log("🚨 Cerrando proceso porque la aplicación no se cargó.");
-      process.exit(1); //Detenemos completamete la ejecución
-    }
-
-    //Llamada a la función que hace click en el buscador
-    await clickOnAnyElementSelector(driver, SELECTORS.searchButton1);
-
-    await humanLikeDelay(); // Retraso antes de hacer clic
-
-    // Escribir en el input
-    await writeInSearchInput(driver, TEXT_TO_SEARCH);
-
-    await humanLikeDelay(); // Retraso antes de hacer clic
-
-    //Hacer click en la pestaña 'Usuarios'
-    await clickOnAnyElementSelector(driver, SELECTORS.usersButton);
-
-    await humanLikeDelay(); // Retraso antes de hacer clic
-
-    //Hacer click en el primer usuario de la busqueda
-    await clickOnAnyElementSelector(driver, SELECTORS.firstUser);
-
-    await humanLikeDelay(); // Retraso antes de hacer clic
-
-    //Hacer click en el primer video del usuario
-    await clickOnAnyElementSelector(driver, SELECTORS.firstVideo);
+    await driver.pause(3000); // Pausa la ejecución durante 2 segundos
 
     await humanLikeDelay(); // Retraso antes de hacer clic
 
@@ -121,30 +85,26 @@ const testAppium = async (udid, port) => {
 // Ejecutar en múltiples dispositivos
 const runOnMultipleDevices = async () => {
   try {
-    // Iniciar los servidores de Appium
-    console.log("⏳ Iniciando servidores de Appium...");
-    await startAllServers(PORTS);
-    console.log("✅ Todos los servidores de Appium iniciados.");
-
+    //Obtener los dispositivos conectados
     const devices = getConnectedDevices();
     if (devices.length === 0) {
       console.log("🚨 No se encontraron dispositivos conectados.");
       return;
     }
 
-    // Verificar que haya suficientes puertos
-    if (devices.length > PORTS.length) {
-      console.warn(
-        `⚠️ Hay más dispositivos (${devices.length}) que puertos disponibles (${PORTS.length}). Solo se usarán los primeros ${PORTS.length} dispositivos.`
-      );
-    }
+    // Iniciar los servidores de Appium
+    console.log("⏳ Iniciando servidores de Appium...");
+    const startedPorts = await startAllServers(devices.length);
+    console.log("✅ Todos los servidores de Appium iniciados.");
 
-    const tasks = devices
-      .slice(0, PORTS.length)
-      .map((udid, index) => testAppium(udid, PORTS[index]));
+    const automationTasks = devices.map((udid, index) =>
+      tiktokAutomatizacion(udid, startedPorts[index])
+    );
 
-    console.log(`🚀 Ejecutando pruebas en ${tasks.length} dispositivos...`);
-    const results = await Promise.allSettled(tasks);
+    console.log(
+      `🚀 Ejecutando pruebas en ${automationTasks.length} dispositivos...`
+    );
+    const results = await Promise.allSettled(automationTasks);
 
     // Analizar resultados
     results.forEach((result, index) => {

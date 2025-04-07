@@ -10,13 +10,19 @@ const startAppiumServer = (port) => {
     console.log(`🔄 Iniciando Appium en el puerto ${port}...`);
 
     /**Ejecutamos el comando "appium --port X" para iniciar appium en el puerto dado. */
-    const appiumProcess = exec(`appium --port ${port}`, (error) => {
-      //Si hay un error al iniciar el servidor, lo registramos y rechazamos la promesa.
-      if (error) {
-        console.error(`❌ Error iniciando Appium en el puerto ${port}:`, error);
-        reject({ port, error }); // Devolvemos el puerto y el error
+    const appiumProcess = exec(
+      `npx appium --allow-insecure=adb_shell --port ${port}`,
+      (error) => {
+        //Si hay un error al iniciar el servidor, lo registramos y rechazamos la promesa.
+        if (error) {
+          console.error(
+            `❌ Error iniciando Appium en el puerto ${port}:`,
+            error
+          );
+          reject({ port, error }); // Devolvemos el puerto y el error
+        }
       }
-    });
+    );
 
     //Escuchamos la salida de la terminal donde se esta ejecutando Appium.
     appiumProcess.stdout.on("data", (data) => {
@@ -35,11 +41,25 @@ const startAppiumServer = (port) => {
 // const ports = [4723, 4724, 4725];
 
 //Funcion asincrona para iniciar los servidores en todos los puertos definidos.
-const startAllServers = async (ports) => {
+const startAllServers = async (devicesCount) => {
+  /**
+   * Generar puertos dinámicamente. Asumimos que comenzamos desde 4723
+   * Comenzamos desde el puerto 4723 y aumentamos según la cantidad de dispositivos (devicesCount).
+   * Creamos un arreglo con una longitud igual a devicesCount.
+   * Para cada elemento ignoramos el elemento actual (_) y usamos el indice (indice) para sumar al puerto base 4723.
+   */
+  const ports = Array.from(
+    { length: devicesCount },
+    (_, indice) => 4723 + indice
+  );
+
   /**Usamos "PromiseAllSettled" para ejecutar todos los servidores en paralelo y asegurarnos de que, aunque alguno falle, los demas sigan corriendo  */
   const results = await Promise.allSettled(
     ports.map((port) => startAppiumServer(port))
   );
+
+  // Creamos un array con los puertos en los que los servidores se han iniciado correctamente
+  const startedPorts = [];
 
   //Mostraremos un resumen del estado de cada servidor
   console.log("\n📊 **Resumen de servidores:**");
@@ -49,6 +69,9 @@ const startAllServers = async (ports) => {
       console.log(
         `✅ Servidor en puerto ${result.value.port} iniciado correctamente.`
       );
+
+      //Agregamos el puerto que se inició correctamente
+      startedPorts.push(result.value.port);
     } else {
       //Si la promesa fue rechazada, mostramos el error correspondiente.
       console.error(
@@ -57,6 +80,10 @@ const startAllServers = async (ports) => {
       );
     }
   });
+
+  console.log("Puertos iniciados: ", startedPorts);
+  //Devolvemos los puertos que se iniciarón correctamente
+  return startedPorts;
 };
 
 // Llamamos a la función principal para iniciar los servidores Appium.

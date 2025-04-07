@@ -143,3 +143,13 @@ async function ejecutarPruebas() {
 
 // 🔥 Iniciar pruebas
 ejecutarPruebas();
+
+
+//*Como iniciar servidor appium 
+  ir al proyecto y ejecutarlo desde ahi
+*/
+modo normal ->npx appium
+modo insecure shell ->npx appium --allow-insecure=adb_shell
+
+//*Para trackear los dispositivos saber si estan conectados*/
+-> adb track-devices

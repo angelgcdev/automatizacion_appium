@@ -3,10 +3,13 @@ import { execSync } from "child_process";
 const getConnectedDevices = () => {
   try {
     const output = execSync("adb devices").toString();
+
     const devices = output
       .split("\n")
       .slice(1) // Ignorar la primera línea ("List of devices attached")
-      .map((line) => line.split("\t")[0].trim())
+      .map((line) => {
+        return line.split("\t")[0].trim();
+      })
       .filter(Boolean); // Filtrar líneas vacías
     return devices;
   } catch (error) {
@@ -15,6 +18,6 @@ const getConnectedDevices = () => {
   }
 };
 
-// console.log(getConnectedDevices());
+console.log(getConnectedDevices());
 
 export { getConnectedDevices };
