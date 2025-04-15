@@ -5,13 +5,7 @@ const clickOnAnyElementSelector = async (driver, selectors) => {
   //Creamos un array de promesas
   const elementPromises = selectors.map(async (selector) => {
     const element = await driver.$(selector); //Busca el elemento
-    const exists = await element.isExisting(); // Verificar si existe
-
-    if (exists) {
-      return element; // Retorna el elemento si es valido
-    } else {
-      throw new Error(`❌ Elemento no encontrado: ${selector}`);
-    }
+    return element;
   });
 
   try {

@@ -31,10 +31,32 @@ const SELECTORS = {
   firstVideo: [
     'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/cover").instance(1)',
   ],
-  likeButton: ["id:com.zhiliaoapp.musically:id/dt3"],
-  addVideo: ["id:com.zhiliaoapp.musically:id/f31"],
+  likeButton: [
+    "~Me gusta",
+    '//android.widget.ImageView[@content-desc="Me gusta"]',
+  ],
+  addVideo: [
+    "~Añade o elimina este vídeo de Favoritos.",
+    '//android.widget.Button[@content-desc="Añade o elimina este vídeo de Favoritos."]',
+  ],
+  commentButton: [
+    '//android.widget.Button[contains(@content-desc, "Leer o añadir comentarios")]',
+  ],
+  inputComment: [
+    '//android.widget.EditText[@resource-id="com.zhiliaoapp.musically:id/cu0"]',
+  ],
+  inputField:
+    '(//android.widget.EditText[@resource-id="com.zhiliaoapp.musically:id/cu0"])[2]',
+
+  textToComment: "De la marca pajaro......🤣🤣😂",
+  publicComment: [
+    "~Publicar comentario",
+    '//android.widget.Button[@content-desc="Publicar comentario"]',
+  ],
+  closeComments: [
+    "~Cerrar",
+    '//android.widget.ImageView[@content-desc="Cerrar"]',
+  ],
 };
 
-const PORTS = [4723, 4724];
-
-export { CAPABILITIES, SELECTORS, PORTS };
+export { CAPABILITIES, SELECTORS };
