@@ -5,7 +5,7 @@ const socket = io("http://localhost:4000"); // Cambia la URL si tu backend está
 
 // Evento de conexión
 socket.on("connect", () => {
-  console.log("🔗 Conectado al servidor Socket.IO");
+  console.log("🔗 Servidor local conectado al backend.");
 });
 
 // Evento de desconexión

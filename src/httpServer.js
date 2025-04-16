@@ -2,6 +2,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import socket from "./socketClient.js";
 
 const app = express();
 const PORT_HTTP = 5000;
@@ -26,6 +27,10 @@ app.post("/registrar-usuario", (req, res) => {
   //Guardar el ID
   userIdActual = usuario_id;
   console.log(`Usuario registrado: ${usuario_id}`);
+
+  //Registrar usuario a la sala privada socket io
+  socket.emit("registrar_usuario", { usuario_id });
+
   res.status(200).json({ status: "ok" });
 });
 
