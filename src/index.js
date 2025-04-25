@@ -24,7 +24,9 @@ const tiktokAutomatizacion = async (
   udid,
   port,
   URL_VIDEO_TIKTOK,
-  NUM_VIEWS
+  NUM_VIEWS,
+  ITEMS = [],
+  COMMENT = ""
 ) => {
   let driver;
 
@@ -44,7 +46,7 @@ const tiktokAutomatizacion = async (
     console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
 
     // ⏳ Simula comportamiento humano
-    await humanLikeDelay();
+    // await humanLikeDelay();
 
     // 🔗 Abrir la URL del video directamente en TikTok usando ADB(Android Debug Bridge)
     console.log("⏳ Abriendo video directamente en TikTok...");
@@ -61,48 +63,62 @@ const tiktokAutomatizacion = async (
 
     await driver.pause(3000); // Pausa la ejecución durante 2 segundos
 
-    await humanLikeDelay();
+    // await humanLikeDelay();
 
-    //❤️ Dar en 'Me Gusta' en el video
-    await clickOnAnyElementSelector(driver, SELECTORS.likeButton);
-
-    await humanLikeDelay();
+    //❤️'Me Gusta'
+    if (ITEMS.includes("liked")) {
+      await clickOnAnyElementSelector(driver, SELECTORS.likeButton);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    }
 
     // await driver.pause(5000); // Pausa la ejecución durante 2 segundos
 
-    // // 💾 Añadir o guardar video
-    // await clickOnAnyElementSelector(driver, SELECTORS.addVideo);
+    // 💾 Guardar video
+    if (ITEMS.includes("saved")) {
+      await clickOnAnyElementSelector(driver, SELECTORS.addVideo);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    }
+
+    // 💬 Comentar
+    if (COMMENT && COMMENT.trim() !== "") {
+      //hacer click en el boton comentario
+      await clickOnAnyElementSelector(driver, SELECTORS.commentButton);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
+      //hacer click en el input del comentario
+      await clickOnAnyElementSelector(driver, SELECTORS.inputComment);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
+      // Escribir el comentario
+      await writeInInput(driver, COMMENT, SELECTORS.inputField);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
+      // Publicar comentario
+      await clickOnAnyElementSelector(driver, SELECTORS.publicComment);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
+      //Cerrar los comentarios
+      await clickOnAnyElementSelector(driver, SELECTORS.closeComments);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    }
 
     // await humanLikeDelay();
-
-    // // Comentario en video
-    // //hacer click en el boton comentario
-    // await clickOnAnyElementSelector(driver, SELECTORS.commentButton);
     // await humanLikeDelay();
+    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
 
-    // //hacer click en el input del comentario
-    // await clickOnAnyElementSelector(driver, SELECTORS.inputComment);
-    // await humanLikeDelay();
-
-    // // Escribir el comentario
-    // await writeInInput(driver, SELECTORS.textToComment, SELECTORS.inputField);
-    // await humanLikeDelay();
-
-    // // Publicar comentario
-    // await clickOnAnyElementSelector(driver, SELECTORS.publicComment);
-    // await humanLikeDelay();
-
-    // //Cerrar los comentarios
-    // await clickOnAnyElementSelector(driver, SELECTORS.closeComments);
-    // await humanLikeDelay();
-
-    // await humanLikeDelay();
-    // await humanLikeDelay();
-
-    // // 👀 Generar vistas
-    // await generateViews(driver, NUM_VIEWS);
-
-    // await humanLikeDelay();
+    // 👀 Vistas
+    if (NUM_VIEWS > 0) {
+      await generateViews(driver, NUM_VIEWS);
+      // await humanLikeDelay();
+      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    }
   } catch (error) {
     // ⚠️ Capturar errores durante la automatización
     console.error(`❌ [${udid}] Error en Appium:`, error);
@@ -122,7 +138,9 @@ const tiktokAutomatizacion = async (
 /**
  * 🔁 Ejecutar en múltiples dispositivos
  */
-const runOnMultipleDevices = async (url_video, num_views) => {
+const runOnMultipleDevices = async (data) => {
+  const { url_video, views_count, items, comment } = data;
+
   // Para almacenar procesos de appium con los puertos
   let appiumProcesses;
 
@@ -144,7 +162,14 @@ const runOnMultipleDevices = async (url_video, num_views) => {
 
     // ⚙️ Preparar tareas de automatización por dispositivo
     const automationTasks = devices.map((udid, index) =>
-      tiktokAutomatizacion(udid, startedPorts[index], url_video, num_views)
+      tiktokAutomatizacion(
+        udid,
+        startedPorts[index],
+        url_video,
+        views_count,
+        items,
+        comment
+      )
     );
 
     console.log(
@@ -180,11 +205,12 @@ const runOnMultipleDevices = async (url_video, num_views) => {
 };
 
 // Escuchar evento del backend para iniciar la automatización
-socket.on("ejecutar-automatizacion", async ({ url_video, num_views }) => {
+socket.on("executeAutomation", async (data) => {
   console.log(
-    "📥 Orden recibida: Iniciar automatización en múltiples dispositivos."
+    "📥 Orden recibida: Iniciar automatización en múltiples dispositivos.",
+    data
   );
-  await runOnMultipleDevices(url_video, num_views);
+  await runOnMultipleDevices(data);
 });
 
 iniciarTrackerDeDispositivos();

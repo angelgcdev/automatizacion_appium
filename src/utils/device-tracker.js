@@ -21,7 +21,7 @@ export function iniciarTrackerDeDispositivos() {
             const info = await obtenerInfoDispositivo(device.id);
 
             // Enviar la informacion al servidor
-            socket.emit("device_connected", info);
+            socket.emit("deviceConnected", info);
           } catch (err) {
             console.error("Error al obtener info del dispositivo:", err);
           }

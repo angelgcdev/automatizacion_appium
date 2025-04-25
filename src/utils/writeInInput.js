@@ -6,9 +6,15 @@ const writeInInput = async (driver, textToComment, selectorField) => {
       timeoutMsg: "El input de búsqueda no apareció a tiempo.",
     });
 
+    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
     await input.click(); // Enfoca el campo
 
+    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+
     await input.addValue(textToComment);
+
+    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
 
     console.log(`✍ Escribiendo en el input: ${textToComment}`);
     console.log("Texto final:", (await input.getText()) || "vacío");
