@@ -16,22 +16,27 @@ app.use(bodyParser.json());
 let userIdActual = null;
 
 //Ruta para registrar el ID del usuario o su token
-app.post("/registrar-usuario", (req, res) => {
-  const { usuario_id } = req.body;
-  console.log("body: ", req.body);
+app.post("/identify-user", (req, res) => {
+  const { user_id } = req.body;
+  console.log("Solicitud recibida en /usuario-actual :", req.body);
 
-  if (!usuario_id) {
-    return res.status(400).json({ error: "Falta el ID del usuario" });
+  if (!user_id) {
+    console.warn("⚠️ No se recibió user_id en el body.");
+    return res.status(400).json({
+      error: "Se requiere el ID del usuario en el cuerpo de la solicitud.",
+    });
   }
 
-  //Guardar el ID
-  userIdActual = usuario_id;
-  console.log(`Usuario registrado: ${usuario_id}`);
+  //Guardar el ID del usuario actual
+  userIdActual = user_id;
+  console.log(`Usuario activo registrado: ${user_id}`);
 
   //Registrar usuario a la sala privada socket io
-  socket.emit("registrar_usuario", { usuario_id });
+  socket.emit("user:register", { user_id });
 
-  res.status(200).json({ status: "ok" });
+  res
+    .status(200)
+    .json({ status: "ok", message: "Usuario registrado correctamente." });
 });
 
 //Funcion para exponer el ID actual o otros modulos

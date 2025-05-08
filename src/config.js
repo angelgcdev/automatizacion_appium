@@ -43,13 +43,15 @@ const SELECTORS = {
     '//android.widget.Button[contains(@content-desc, "Leer o añadir comentarios")]',
   ],
   inputComment: [
+    'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/bjh")',
     '//android.widget.EditText[@text="Añadir comentario..."]',
     "id:com.zhiliaoapp.musically:id/cwd",
   ],
 
   inputField:
-    // '//android.widget.EditText[@text="Añadir comentario..."]',
-    '(//android.widget.EditText[@resource-id="com.zhiliaoapp.musically:id/cwd"])[2]',
+    'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/cx7")',
+  // '//android.widget.EditText[@text="Añadir comentario..."]',
+  // '(//android.widget.EditText[@resource-id="com.zhiliaoapp.musically:id/cwd"])[2]',
 
   // textToComment: "De la marca pajaro......🤣🤣😂",
   publicComment: [

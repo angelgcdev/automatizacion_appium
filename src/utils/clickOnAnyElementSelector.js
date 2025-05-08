@@ -1,25 +1,28 @@
-// import { humanLikeDelay } from "./humanLikeDelay.js";
+import { humanLikeDelay } from "./humanLikeDelay.js";
 
 // Función para hacer clic en el primer elemento disponible
 const clickOnAnyElementSelector = async (driver, selectors) => {
-  try {
-    //Creamos un array de promesas
-    const elementPromises = selectors.map(async (selector) => {
-      const element = await driver.$(selector); //Busca el elemento
-      return element;
-    });
+  //Creamos un array de promesas
+  const elementPromises = selectors.map(async (selector) => {
+    const element = await driver.$(selector); //Busca el elemento
+    // const exists = await element.isExisting(); // Verificar si existe
 
+    // if (exists) {
+    //   return element; // Retorna el elemento si es valido
+    // } else {
+    //   throw new Error(`❌ Elemento no encontrado: ${selector}`);
+    // }
+    return element;
+  });
+
+  try {
     //Esperar al primer elemento válido usando Promise.any
     const validElement = await Promise.any(elementPromises);
 
-    // await humanLikeDelay();
-    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    await humanLikeDelay();
 
     //Hacer click en el elemento encontrado
     await validElement.click();
-
-    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
-
     console.log(`✅ Click en el elemento: ${validElement.selector}`);
     return true; // Éxito
   } catch (error) {

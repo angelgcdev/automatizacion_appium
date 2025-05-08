@@ -1,16 +1,26 @@
-// 📦 Importaciones de librerias y utilidades necesarias
+// 1. Librerías de Node.js
+
+// 2. Librerías de terceros
+
+// 3. Librerías internas absolutas
+
+// 4. Imports relativos
 import { iniciarHttpServer } from "./httpServer.js";
 import socket from "./socketClient.js";
 import { iniciarTrackerDeDispositivos } from "./utils/device-tracker.js";
-
-import { remote } from "webdriverio"; // Cliente Webdrier io para controlar dispositivos
 import { humanLikeDelay } from "./utils/humanLikeDelay.js"; //
-import { clickOnAnyElementSelector } from "./utils/clickOnAnyElementSelector.js";
 import { generateViews } from "./utils/generateViews.js";
-import { CAPABILITIES, SELECTORS } from "./config.js";
 import { startAllServers, stopAllServers } from "./utils/startAppiumServers.js";
 import { getConnectedDevices } from "./utils/getConnectedDevices.js";
 import { writeInInput } from "./utils/writeInInput.js";
+import { clickSimple } from "./utils/clickSimple.js";
+import { clickWithScroll } from "./utils/clickWithScroll.js";
+import { videoPageSelectors as tiktokVideoSelectors } from "./pages/tiktok/videoPage.js";
+import { profilePageSelectors as tiktokProfileSelectors } from "./pages/tiktok/profilePage.js";
+import { commentModalSelectors as tiktokCommentModalSelectors } from "./pages/tiktok/commentModal.js";
+import { connectToAppium } from "./utils/connectToAppium.js";
+import { openTiktokVideo } from "./utils/openTiktokVideo.js";
+import { goToProfileUserVideos } from "./utils/goToProfileUserVideos.js";
 
 //Iniciar el servidor HTTP
 iniciarHttpServer();
@@ -26,106 +36,88 @@ const tiktokAutomatizacion = async (
   URL_VIDEO_TIKTOK,
   NUM_VIEWS,
   ITEMS = [],
-  COMMENT = ""
+  COMMENT = "",
+  relation_id
 ) => {
   let driver;
 
   try {
     // 🚀 Conectar con Appium para controlar el dispositivo
-    driver = await remote({
-      hostname: "127.0.0.1",
-      port,
-      // path: "/wd/hub", //si usas Appium Server UI
-      path: "/", // Appium terminal
-      capabilities: {
-        ...CAPABILITIES,
-        "appium:udid": udid,
-      },
-    });
+    driver = await connectToAppium(udid, port);
 
     console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
-
-    // ⏳ Simula comportamiento humano
-    // await humanLikeDelay();
+    await humanLikeDelay();
 
     // 🔗 Abrir la URL del video directamente en TikTok usando ADB(Android Debug Bridge)
-    console.log("⏳ Abriendo video directamente en TikTok...");
-    await driver.execute("mobile: shell", {
-      command: "am", // El comando para ejecutar actividades en Android
-      args: [
-        "start", // Indica que se va iniciar una actividad
-        "-a", // Acción de visualización (abrir algo)
-        "android.intent.action.VIEW", // Acción de visualización (abrir algo)
-        "-d", //la URL del video de TikTok a abrir
-        URL_VIDEO_TIKTOK, //la URL del video de TikTok a abrir
-      ],
-    });
+    await openTiktokVideo(driver, URL_VIDEO_TIKTOK);
 
-    await driver.pause(3000); // Pausa la ejecución durante 2 segundos
-
-    // await humanLikeDelay();
+    // Ir al perfil de videos del usuario
+    await goToProfileUserVideos(driver);
 
     //❤️'Me Gusta'
     if (ITEMS.includes("liked")) {
-      await clickOnAnyElementSelector(driver, SELECTORS.likeButton);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(driver, tiktokVideoSelectors.likeButton);
     }
 
-    // await driver.pause(5000); // Pausa la ejecución durante 2 segundos
+    await humanLikeDelay();
 
     // 💾 Guardar video
     if (ITEMS.includes("saved")) {
-      await clickOnAnyElementSelector(driver, SELECTORS.addVideo);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(driver, tiktokVideoSelectors.saveVideoButton);
     }
 
     // 💬 Comentar
     if (COMMENT && COMMENT.trim() !== "") {
       //hacer click en el boton comentario
-      await clickOnAnyElementSelector(driver, SELECTORS.commentButton);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(driver, tiktokCommentModalSelectors.commentButton);
+      await humanLikeDelay();
 
       //hacer click en el input del comentario
-      await clickOnAnyElementSelector(driver, SELECTORS.inputComment);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(driver, tiktokCommentModalSelectors.commentInput);
+      await humanLikeDelay();
 
       // Escribir el comentario
-      await writeInInput(driver, COMMENT, SELECTORS.inputField);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await writeInInput(
+        driver,
+        COMMENT,
+        tiktokCommentModalSelectors.commentInputField
+      );
+      await humanLikeDelay();
 
       // Publicar comentario
-      await clickOnAnyElementSelector(driver, SELECTORS.publicComment);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(
+        driver,
+        tiktokCommentModalSelectors.commentPublicButton
+      );
+      await humanLikeDelay();
 
       //Cerrar los comentarios
-      await clickOnAnyElementSelector(driver, SELECTORS.closeComments);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await clickSimple(driver, tiktokCommentModalSelectors.commentCloseButton);
+      await humanLikeDelay();
     }
 
-    // await humanLikeDelay();
-    // await humanLikeDelay();
-    await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+    await humanLikeDelay();
 
     // 👀 Vistas
     if (NUM_VIEWS > 0) {
-      await generateViews(driver, NUM_VIEWS);
-      // await humanLikeDelay();
-      await driver.pause(2000); // Pausa la ejecución durante 2 segundos
+      await generateViews(driver, NUM_VIEWS, udid, port, URL_VIDEO_TIKTOK);
     }
+
+    await humanLikeDelay();
+
+    return { relation_id, status: "COMPLETADA" };
   } catch (error) {
     // ⚠️ Capturar errores durante la automatización
     console.error(`❌ [${udid}] Error en Appium:`, error);
+    return { relation_id, status: "FALLIDA", error: error.message };
   } finally {
-    // 🧹 Finalizar la sesión de Appium correctamente
     if (driver) {
       try {
+        // //✅ Cerrar la aplicación de Tiktok
+        // await driver.terminateApp("com.zhiliaoapp.musically");
+        // console.log("📱 Tiktok cerrado correctamente.");
+
+        //✅ Cerrar la sesión de Appium
         await driver.deleteSession();
         console.log(`🔄 [${udid}] Sesión cerrada correctamente.`);
       } catch (error) {
@@ -139,7 +131,7 @@ const tiktokAutomatizacion = async (
  * 🔁 Ejecutar en múltiples dispositivos
  */
 const runOnMultipleDevices = async (data) => {
-  const { url_video, views_count, items, comment } = data;
+  const { video_url, views_count, items, comment, idsRelations } = data;
 
   // Para almacenar procesos de appium con los puertos
   let appiumProcesses;
@@ -161,16 +153,18 @@ const runOnMultipleDevices = async (data) => {
     console.log("✅ Todos los servidores de Appium iniciados.");
 
     // ⚙️ Preparar tareas de automatización por dispositivo
-    const automationTasks = devices.map((udid, index) =>
-      tiktokAutomatizacion(
+    const automationTasks = devices.map((udid, index) => {
+      const relation = idsRelations.find((relation) => relation.udid === udid);
+      return tiktokAutomatizacion(
         udid,
         startedPorts[index],
-        url_video,
+        video_url,
         views_count,
         items,
-        comment
-      )
-    );
+        comment,
+        relation?.id // Este es el id del registro en la tabla device_scheduled_tiktok_interaction
+      );
+    });
 
     console.log(
       `🚀 Ejecutando pruebas en ${automationTasks.length} dispositivos...`
@@ -183,9 +177,23 @@ const runOnMultipleDevices = async (data) => {
     results.forEach((result, index) => {
       const udid = devices[index];
       if (result.status === "fulfilled") {
+        const { relation_id, status } = result.value;
+
+        //Emitimos el estado actualizando al backend
+        socket.emit("schedule:tiktok:status:update", {
+          id: relation_id,
+          status,
+        });
         console.log(`✅ [${udid}] Ejecución completada con éxito.`);
       } else {
-        console.error(`❌ [${udid}] Falló con error:`, result.reason);
+        const { relation_id } = result.reason; // En caso de fallo, seguimos pasando el relation_id
+        console.error(`❌ [${relation_id}] Falló con error:`, result.reason);
+
+        //Emitimos el estado de fallo al backend
+        socket.emit("schedule:tiktok:status:update", {
+          id: relation_id,
+          status: "FALLIDA",
+        });
       }
     });
 
@@ -205,11 +213,14 @@ const runOnMultipleDevices = async (data) => {
 };
 
 // Escuchar evento del backend para iniciar la automatización
-socket.on("executeAutomation", async (data) => {
+socket.on("schedule:tiktok:execute", async (data) => {
   console.log(
     "📥 Orden recibida: Iniciar automatización en múltiples dispositivos.",
     data
   );
+
+  socket.emit("schedule:tiktok:status:started", "EN_PROGRESO");
+
   await runOnMultipleDevices(data);
 });
 
