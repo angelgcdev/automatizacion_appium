@@ -40,6 +40,6 @@ const getConnectedDevices = async () => {
   }
 };
 
-// getConnectedDevices().then(console.log);
+// getConnectedDevices().then(console.table);
 
 export { getConnectedDevices };

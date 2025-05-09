@@ -4,6 +4,8 @@ import { profilePageSelectors as tiktokProfileSelectors } from "../pages/tiktok/
 import { clickSimple } from "../utils/clickSimple.js";
 import { clickWithScroll } from "../utils/clickWithScroll.js";
 
+let wasClicked = false;
+
 const goToProfileUserVideos = async (driver) => {
   // Hacer click en la cuenta del usuario tiktok
   await clickSimple(driver, tiktokVideoSelectors.profileName);
@@ -18,19 +20,23 @@ const goToProfileUserVideos = async (driver) => {
 
   if (cantidadVideos > 1) {
     //Hacer click en el boton "Visto justo ahora"
-    try {
-      await clickSimple(driver, tiktokProfileSelectors.vistoJustoAhoraBtn);
+    wasClicked = await clickSimple(
+      driver,
+      tiktokProfileSelectors.vistoJustoAhoraBtn
+    );
+    await humanLikeDelay();
+    await driver.pause(5000); // Pausa
 
-      await humanLikeDelay();
-      await driver.pause(5000); // Pausa
-
+    if (wasClicked) {
       //Click en el video que dice "Visto justo ahora"
-      await clickSimple(
+      wasClicked = await clickSimple(
         driver,
         tiktokProfileSelectors.vistoJustoAhoraVideoIcon
       );
       await humanLikeDelay();
-    } catch (error) {
+    }
+
+    if (!wasClicked) {
       console.log("Ejecutando el fallback (plan B)");
       //Fallback
 

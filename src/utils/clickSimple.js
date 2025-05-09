@@ -10,10 +10,11 @@ const clickSimple = async (driver, selector) => {
     await element.click();
 
     console.log(`✅ Click en el elemento:`, element);
-    return true; // Éxito
+    return true;
   } catch (error) {
     console.error("❌ Ningun elemento válido fue encontrado:", error);
-    throw new Error("No se pudo hacer click en ningun elemento.");
+    // throw new Error("No se pudo hacer click en ningun elemento.");
+    return false;
   }
 };
 

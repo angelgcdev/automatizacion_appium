@@ -1,4 +1,4 @@
-import { scrollDown } from "./scrollDown.js";
+import { scrollDownShort } from "./scrollDownShort.js";
 
 const clickWithScroll = async (driver, selector) => {
   let scrollCount = 0;
@@ -12,10 +12,13 @@ const clickWithScroll = async (driver, selector) => {
       // Pausa corta antes de hacer click
       await driver.pause(600); //Tiempo recomendado calibrado
 
-      // Usar mobile: clickGesture
-      await driver.executeScript("mobile: clickGesture", [
-        { element: element.elementId },
-      ]);
+      // // Usar mobile: clickGesture
+      // await driver.executeScript("mobile: clickGesture", [
+      //   { element: element.elementId },
+      // ]);
+
+      //hacer click
+      await element.click();
 
       console.log(`✅ Click en el elemento:`, element);
       canScrollMore = false;
@@ -26,7 +29,7 @@ const clickWithScroll = async (driver, selector) => {
 
     console.log(`🔄 Elemento no encontrado. Scroll #${scrollCount + 1}`);
 
-    await scrollDown(driver);
+    await scrollDownShort(driver);
 
     scrollCount++;
 

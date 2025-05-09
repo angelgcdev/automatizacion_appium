@@ -16,47 +16,59 @@ const generateViews = async (
   port,
   URL_VIDEO_TIKTOK
 ) => {
-  for (let i = 0; i < numViews; i++) {
-    console.log(`🔄 Scroll ${i + 1}...`);
+  try {
+    for (let i = 0; i < numViews; i++) {
+      console.log(`🔄 Scroll ${i + 1}...`);
 
-    try {
-      await driver.pause(getRandomDelay(100, 300));
+      try {
+        await driver.pause(getRandomDelay(100, 300));
 
-      // Haciendo scroll hacia abajo
-      await scrollDown(driver);
-      await driver.pause(getRandomDelay(100, 300)); // Pausa
+        // Haciendo scroll hacia abajo
+        await scrollDown(driver);
+        await driver.pause(getRandomDelay(100, 300)); // Pausa
 
-      // Haciendo scroll hacia arriba
-      await scrollUp(driver);
-      await driver.pause(getRandomDelay(100, 300)); // Pausa
-    } catch (error) {
-      console.error("⚠️ Error en scroll:", error.message);
+        // Haciendo scroll hacia arriba
+        await scrollUp(driver);
+        await driver.pause(getRandomDelay(100, 300)); // Pausa
+      } catch (error) {
+        console.error("⚠️ Error en scroll:", error);
 
-      //Intentar reconectar con Appium
-      console.log("🔁 Intentando reconectar con Appium...");
+        //Intentar reconectar con Appium
+        console.log("🔁 Intentando reconectar con Appium...");
 
-      // Detener el servidor en el puerto para este proceso
-      await stopAppiumServer(port);
+        try {
+          // Detener el servidor en el puerto para este proceso
+          await stopAppiumServer(port);
 
-      //levantar el servidor en el puerto para este proceso
-      await startAppiumServer(port);
+          //levantar el servidor en el puerto para este proceso
+          await startAppiumServer(port);
 
-      //Conectar nuevamente con appium
-      const newDriver = await connectToAppium(udid, port);
-      if (newDriver) {
-        driver = newDriver;
-        console.log("✅ Reconexión exitosa.");
+          //Conectar nuevamente con appium
+          const newDriver = await connectToAppium(udid, port);
+          if (newDriver) {
+            driver = newDriver;
+            console.log("✅ Reconexión exitosa.");
+          }
+
+          await humanLikeDelay();
+          //Abrir nuevamente el video de tiktok
+          await openTiktokVideo(driver, URL_VIDEO_TIKTOK);
+
+          await humanLikeDelay();
+          //Ir nuevamente al perfil de videos del usuario
+          await goToProfileUserVideos(driver);
+        } catch (error) {
+          console.error("❌ Falló la reconexión con Appium:", error);
+        }
+
         i = i - 1; // descontar la falla para ser mas preciso en la cantidad de views
       }
-
-      await humanLikeDelay();
-      //Abrir nuevamente el video de tiktok
-      await openTiktokVideo(driver, URL_VIDEO_TIKTOK);
-
-      await humanLikeDelay();
-      //Ir nuevamente al perfil de videos del usuario
-      await goToProfileUserVideos(driver);
     }
+
+    return true;
+  } catch (error) {
+    console.log("❌ No se generaron las vistas correctamente...", error);
+    return false;
   }
 };
 
