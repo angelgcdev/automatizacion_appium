@@ -2,7 +2,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import socket from "./socketClient.js";
+import { iniciarSocketClient } from "./socketClient.js";
 
 const app = express();
 const PORT_HTTP = 5000;
@@ -18,7 +18,7 @@ let userIdActual = null;
 //Ruta para registrar el ID del usuario o su token
 app.post("/identify-user", (req, res) => {
   const { user_id } = req.body;
-  console.log("Solicitud recibida en /usuario-actual :", req.body);
+  console.log("Petición recibida del cliente:", req.body);
 
   if (!user_id) {
     console.warn("⚠️ No se recibió user_id en el body.");
@@ -29,10 +29,10 @@ app.post("/identify-user", (req, res) => {
 
   //Guardar el ID del usuario actual
   userIdActual = user_id;
-  console.log(`Usuario activo registrado: ${user_id}`);
+  console.log(`ID del usuario recibido: ${user_id}`);
 
-  //Registrar usuario a la sala privada socket io
-  socket.emit("user:register", { user_id });
+  // Iniciar el socketio client
+  iniciarSocketClient(userIdActual);
 
   res
     .status(200)

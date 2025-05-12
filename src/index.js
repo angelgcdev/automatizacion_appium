@@ -6,8 +6,7 @@
 
 // 4. Imports relativos
 import { iniciarHttpServer } from "./httpServer.js";
-import socket from "./socketClient.js";
-import { iniciarTrackerDeDispositivos } from "./utils/device-tracker.js";
+import { getSocket } from "./socketClient.js";
 import { humanLikeDelay } from "./utils/humanLikeDelay.js";
 import { generateViews } from "./utils/generateViews.js";
 import { getConnectedDevices } from "./utils/getConnectedDevices.js";
@@ -166,6 +165,9 @@ const tiktokAutomatizacion = async (
  * 🔁 Ejecutar en múltiples dispositivos
  */
 const runOnMultipleDevices = async (data) => {
+  //Obtener la conexion Socket.IO
+  const socket = getSocket();
+
   const { video_url, views_count, items, comment, idsRelations } = data;
 
   try {
@@ -244,16 +246,4 @@ const runOnMultipleDevices = async (data) => {
   }
 };
 
-// Escuchar evento del backend para iniciar la automatización
-socket.on("schedule:tiktok:execute", async (data) => {
-  console.log(
-    "📥 Orden recibida: Iniciar automatización en múltiples dispositivos.",
-    data
-  );
-
-  socket.emit("schedule:tiktok:status:started", "EN_PROGRESO");
-
-  await runOnMultipleDevices(data);
-});
-
-iniciarTrackerDeDispositivos();
+export { runOnMultipleDevices };
