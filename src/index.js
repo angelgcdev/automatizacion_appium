@@ -40,6 +40,7 @@ const tiktokAutomatizacion = async (
 ) => {
   // Para guardar el historial de la interacción
   const history = {
+    video_url: "",
     username: "",
     total_views: 0,
     liked: false,
@@ -65,6 +66,7 @@ const tiktokAutomatizacion = async (
 
     // 🔗 Abrir la URL del video directamente en TikTok usando ADB(Android Debug Bridge)
     await openTiktokVideo(driver, video_url);
+    history.video_url = video_url;
 
     await humanLikeDelay();
 
@@ -210,24 +212,13 @@ const runOnMultipleDevices = async (data) => {
       const udid = devices[index];
 
       if (result.status === "fulfilled") {
-        const { idRelations, status, history } = result.value;
+        const dataInteraction = result.value;
 
         //Emitimos el estado actualizando al backend
-        socket.emit("schedule:tiktok:status:update", {
-          idRelations,
-          status,
-          history,
-        });
+        socket.emit("schedule:tiktok:status:update", dataInteraction);
         console.log(`✅ [${udid}] Ejecución completada con éxito.`);
       } else {
-        const { idRelations } = result.reason; // En caso de fallo, seguimos los ids
-        console.error(`❌ [${idRelations}] Falló con error:`, result.reason);
-
-        //Emitimos el estado de fallo al backend
-        socket.emit("schedule:tiktok:status:update", {
-          idRelations,
-          status: "FALLIDA",
-        });
+        console.log("Ejecucion falló:", result.reason);
       }
     });
 
