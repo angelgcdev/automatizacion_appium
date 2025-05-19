@@ -32,20 +32,19 @@ iniciarHttpServer();
 const tiktokAutomatizacion = async (
   udid,
   port,
-  video_url,
-  views_count,
-  ITEMS = [],
-  comment = "",
-  idRelations
+  scheduledTiktokInteractionData,
+  activeDevice
 ) => {
   // Para guardar el historial de la interacción
   const history = {
-    video_url: "",
+    device_id: activeDevice.device_id,
     username: "",
     total_views: 0,
     liked: false,
     video_saved: false,
     commented: "",
+    video_url: "",
+    status: "",
   };
 
   let driver; // Para guardar la sesión con Appium
@@ -65,8 +64,8 @@ const tiktokAutomatizacion = async (
     await humanLikeDelay();
 
     // 🔗 Abrir la URL del video directamente en TikTok usando ADB(Android Debug Bridge)
-    await openTiktokVideo(driver, video_url);
-    history.video_url = video_url;
+    await openTiktokVideo(driver, scheduledTiktokInteractionData.video_url);
+    history.video_url = scheduledTiktokInteractionData.video_url;
 
     await humanLikeDelay();
 
@@ -82,7 +81,7 @@ const tiktokAutomatizacion = async (
     await goToProfileUserVideos(driver);
 
     //❤️'Me Gusta'
-    if (ITEMS.includes("liked")) {
+    if (scheduledTiktokInteractionData.liked) {
       wasClicked = await clickSimple(driver, tiktokVideoSelectors.likeButton);
       if (wasClicked) {
         history.liked = true;
@@ -92,7 +91,7 @@ const tiktokAutomatizacion = async (
     await humanLikeDelay();
 
     // 💾 Guardar video
-    if (ITEMS.includes("saved")) {
+    if (scheduledTiktokInteractionData.saved) {
       wasClicked = await clickSimple(
         driver,
         tiktokVideoSelectors.saveVideoButton
@@ -106,41 +105,53 @@ const tiktokAutomatizacion = async (
     await humanLikeDelay();
 
     // 💬 Comentar
-    if (comment && comment.trim() !== "") {
-      const wasCommented = await commentOnTiktokVideo(driver, comment);
+    if (
+      scheduledTiktokInteractionData.comment &&
+      scheduledTiktokInteractionData.comment.trim() !== ""
+    ) {
+      const wasCommented = await commentOnTiktokVideo(
+        driver,
+        scheduledTiktokInteractionData.comment
+      );
       if (wasCommented) {
-        history.commented = comment;
+        history.commented = scheduledTiktokInteractionData.comment;
       }
     }
 
     await humanLikeDelay();
 
     // 👀 Vistas
-    if (views_count > 0) {
+    if (scheduledTiktokInteractionData.views_count > 0) {
       const wasGeneratedViews = await generateViews(
         driver,
-        views_count,
+        scheduledTiktokInteractionData.views_count,
         udid,
         port,
-        video_url
+        scheduledTiktokInteractionData.video_url
       );
 
       if (wasGeneratedViews) {
-        history.total_views = views_count;
+        history.total_views = scheduledTiktokInteractionData.views_count;
       }
     }
 
     await humanLikeDelay();
 
-    return { idRelations, status: "COMPLETADA", history };
+    return {
+      activeDevice,
+      status: "COMPLETADA",
+      history,
+      scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
+    };
   } catch (error) {
     // ⚠️ Capturar errores durante la automatización
     console.error(`❌ [${udid}] Error en Appium:`, error);
 
     return {
-      idRelations,
+      activeDevice,
       status: "FALLIDA",
       history,
+      scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
       error: error.message,
     };
   } finally {
@@ -170,7 +181,7 @@ const runOnMultipleDevices = async (data) => {
   //Obtener la conexion Socket.IO
   const socket = getSocket();
 
-  const { video_url, views_count, items, comment, idsRelations } = data;
+  const { scheduledTiktokInteractionData, activeDevices } = data;
 
   try {
     // 🔌 Obtener todos los dispositivos android conectados
@@ -184,17 +195,14 @@ const runOnMultipleDevices = async (data) => {
 
     // ⚙️ Preparar tareas de automatización por dispositivo
     const automationTasks = udidsPorts.map((udidPort) => {
-      const idRelations = idsRelations.find(
-        (relation) => relation.udid === udidPort.udid
+      const activeDevice = activeDevices.find(
+        (element) => element.udid === udidPort.udid
       );
       return tiktokAutomatizacion(
         udidPort.udid, //udid
         udidPort.port, // port
-        video_url,
-        views_count,
-        items,
-        comment,
-        idRelations // {device_id, device_scheduled_tiktok_interaction_id, udid}
+        scheduledTiktokInteractionData,
+        activeDevice
       );
     });
 
