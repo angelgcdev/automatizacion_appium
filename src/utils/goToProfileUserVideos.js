@@ -3,6 +3,7 @@ import { videoPageSelectors as tiktokVideoSelectors } from "../pages/tiktok/vide
 import { profilePageSelectors as tiktokProfileSelectors } from "../pages/tiktok/profilePage.js";
 import { clickSimple } from "../utils/clickSimple.js";
 import { clickWithScroll } from "../utils/clickWithScroll.js";
+import { isCancelled } from "../cancelManager.js";
 
 let wasClicked = false;
 
@@ -19,6 +20,10 @@ const goToProfileUserVideos = async (driver) => {
   await humanLikeDelay();
 
   if (cantidadVideos > 1) {
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
+
     //Hacer click en el boton "Visto justo ahora"
     wasClicked = await clickSimple(
       driver,
@@ -28,6 +33,10 @@ const goToProfileUserVideos = async (driver) => {
     await driver.pause(5000); // Pausa
 
     if (wasClicked) {
+      if (isCancelled()) {
+        throw new Error("Ejecución cancelada por el usuario");
+      }
+
       //Click en el video que dice "Visto justo ahora"
       wasClicked = await clickSimple(
         driver,
@@ -37,6 +46,10 @@ const goToProfileUserVideos = async (driver) => {
     }
 
     if (!wasClicked) {
+      if (isCancelled()) {
+        throw new Error("Ejecución cancelada por el usuario");
+      }
+
       console.log("Ejecutando el fallback (plan B)");
       //Fallback
 

@@ -2,8 +2,13 @@ import { humanLikeDelay } from "./humanLikeDelay.js";
 import { clickSimple } from "./clickSimple.js";
 import { writeInInput } from "./writeInInput.js";
 import { commentModalSelectors as tiktokCommentModalSelectors } from "../pages/tiktok/commentModal.js";
+import { isCancelled } from "../cancelManager.js";
 
 const commentOnTiktokVideo = async (driver, comment) => {
+  if (isCancelled()) {
+    throw new Error("Ejecución cancelada por el usuario");
+  }
+
   try {
     //hacer click en el boton comentario
     await clickSimple(driver, tiktokCommentModalSelectors.commentButton);

@@ -6,6 +6,7 @@ import {
   iniciarTrackerDeDispositivos,
   detenerTracker,
 } from "./utils/device-tracker.js";
+import { cancelAll } from "./cancelManager.js";
 
 let socket = null;
 let trackerIniciado = false;
@@ -61,6 +62,12 @@ export function iniciarSocketClient(user_id) {
       socket.emit("schedule:tiktok:status:started", "EN_PROGRESO");
 
       await runOnMultipleDevices(data);
+    });
+
+    // Escuchar evento para cancelar las ejecuciones
+    socket.on("cancel:tiktok:interaction", () => {
+      console.log("✖ Orden recibida: Ejecución cancelada por el usuario.");
+      cancelAll();
     });
 
     // Escuchar el evento para cerrar la conexión

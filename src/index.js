@@ -20,6 +20,7 @@ import { startAppiumServer } from "./utils/startAppiumServer.js";
 import { stopAppiumServer } from "./utils/stopAppiumServer.js";
 import { commentOnTiktokVideo } from "./utils/commentOnTiktokVideo.js";
 import { getUsernameTiktok } from "./utils/getUsernameTiktok.js";
+import { resetCancel, isCancelled } from "./cancelManager.js";
 
 //Iniciar el servidor HTTP
 iniciarHttpServer();
@@ -46,7 +47,6 @@ const tiktokAutomatizacion = async (
     video_url: "",
     status: "",
   };
-
   let driver; // Para guardar la sesión con Appium
   let wasClicked;
 
@@ -57,17 +57,29 @@ const tiktokAutomatizacion = async (
   await startAppiumServer(port);
 
   try {
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
+
     // 🚀 Conectar con Appium para controlar el dispositivo
     driver = await connectToAppium(udid, port);
 
     console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
     await humanLikeDelay();
 
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
+
     // 🔗 Abrir la URL del video directamente en TikTok usando ADB(Android Debug Bridge)
     await openTiktokVideo(driver, scheduledTiktokInteractionData.video_url);
     history.video_url = scheduledTiktokInteractionData.video_url;
 
     await humanLikeDelay();
+
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
 
     // Obtener el username
     const username = await getUsernameTiktok(driver);
@@ -77,8 +89,16 @@ const tiktokAutomatizacion = async (
 
     await humanLikeDelay();
 
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
+
     // Ir al perfil de videos del usuario
     await goToProfileUserVideos(driver);
+
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
 
     //❤️'Me Gusta'
     if (scheduledTiktokInteractionData.liked) {
@@ -89,6 +109,10 @@ const tiktokAutomatizacion = async (
     }
 
     await humanLikeDelay();
+
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
 
     // 💾 Guardar video
     if (scheduledTiktokInteractionData.saved) {
@@ -103,6 +127,10 @@ const tiktokAutomatizacion = async (
     }
 
     await humanLikeDelay();
+
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
 
     // 💬 Comentar
     if (
@@ -119,6 +147,10 @@ const tiktokAutomatizacion = async (
     }
 
     await humanLikeDelay();
+
+    if (isCancelled()) {
+      throw new Error("Ejecución cancelada por el usuario");
+    }
 
     // 👀 Vistas
     if (scheduledTiktokInteractionData.views_count > 0) {
@@ -144,22 +176,32 @@ const tiktokAutomatizacion = async (
       scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
     };
   } catch (error) {
-    // ⚠️ Capturar errores durante la automatización
-    console.error(`❌ [${udid}] Error en Appium:`, error);
+    if (!isCancelled()) {
+      // ⚠️ Capturar errores durante la automatización
+      console.error(`❌ [${udid}] Error en Appium:`, error);
+
+      return {
+        activeDevice,
+        status: "FALLIDA",
+        history,
+        scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
+        error: error.message,
+      };
+    }
 
     return {
-      activeDevice,
-      status: "FALLIDA",
-      history,
+      type: "success",
+      message: "Ejecución cancelada por el usuario",
+      cancelled: true,
       scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
-      error: error.message,
+      status: "CANCELADO",
     };
   } finally {
     if (driver) {
       try {
-        // //✅ Cerrar la aplicación de Tiktok
-        // await driver.terminateApp("com.zhiliaoapp.musically");
-        // console.log("📱 Tiktok cerrado correctamente.");
+        //✅ Cerrar la aplicación de Tiktok
+        await driver.terminateApp("com.zhiliaoapp.musically");
+        console.log("📱 Tiktok cerrado correctamente.");
 
         //✅ Cerrar la sesión de Appium
         await driver.deleteSession();
@@ -217,31 +259,36 @@ const runOnMultipleDevices = async (data) => {
     results.forEach((result, index) => {
       console.log("Resultado de tiktokAutomation: ", result);
 
-      const udid = devices[index];
+      if (!result.value.cancelled) {
+        const udid = devices[index];
 
-      if (result.status === "fulfilled") {
-        const dataInteraction = result.value;
+        if (result.status === "fulfilled") {
+          const dataInteraction = result.value;
 
-        //Emitimos el estado actualizando al backend
-        socket.emit("schedule:tiktok:status:update", dataInteraction);
-        console.log(`✅ [${udid}] Ejecución completada con éxito.`);
+          //Emitimos el estado actualizando al backend
+          socket.emit("schedule:tiktok:status:update", dataInteraction);
+          console.log(`✅ [${udid}] Ejecución completada con éxito.`);
+        } else {
+          console.log("Ejecucion falló:", result.reason);
+        }
       } else {
-        console.log("Ejecucion falló:", result.reason);
+        console.log(result.value.message);
+        socket.emit("notification:localServer", result.value);
       }
     });
 
     console.log("🏁 Pruebas finalizadas en todos los dispositivos.");
   } catch (error) {
-    console.error(
-      "❌ Error al iniciar los servidores o ejecutar las pruebas:",
-      error
-    );
+    console.error(error);
   } finally {
     // //Cerrar servidores Appium al final
     // if (appiumProcesses) {
     //   await stopAllServers(appiumProcesses);
     // }
     // process.exit(0);
+
+    //resetar el flag
+    resetCancel();
   }
 };
 
