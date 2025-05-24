@@ -1,4 +1,4 @@
-import { isCancelled } from "../cancelManager.js";
+import { checkCancel } from "../cancelManager.js";
 
 const clickSimple = async (driver, selector) => {
   let element;
@@ -9,9 +9,8 @@ const clickSimple = async (driver, selector) => {
     // Pausa corta antes de hacer click
     await driver.pause(600); //Tiempo recomendado calibrado
 
-    if (isCancelled()) {
-      throw new Error("Ejecución cancelada por el usuario");
-    }
+    // Revisar cancelacion
+    checkCancel();
 
     await element.click();
 

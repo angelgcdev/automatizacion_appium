@@ -1,15 +1,21 @@
 // src/cancelManager.js
 
-let cancelled = false;
+let canceled = false;
 
 export function cancelAll() {
-  cancelled = true;
+  canceled = true;
 }
 
 export function resetCancel() {
-  cancelled = false;
+  canceled = false;
 }
 
-export function isCancelled() {
-  return cancelled;
+export function isCanceled() {
+  return canceled;
+}
+
+export function checkCancel() {
+  if (canceled) {
+    throw new Error("Ejecución cancelada por el usuario");
+  }
 }

@@ -1,4 +1,4 @@
-import { isCancelled } from "../cancelManager.js";
+import { checkCancel } from "../cancelManager.js";
 import { scrollDownShort } from "./scrollDownShort.js";
 
 const clickWithScroll = async (driver, selector) => {
@@ -8,9 +8,8 @@ const clickWithScroll = async (driver, selector) => {
 
   while (canScrollMore) {
     try {
-      if (isCancelled()) {
-        throw new Error("Ejecución cancelada por el usuario");
-      }
+      // Revisar cancelacion
+      checkCancel();
 
       console.log(`Selector usado: ${selector}`);
       element = await driver.$(selector);
@@ -32,9 +31,8 @@ const clickWithScroll = async (driver, selector) => {
       console.error("❌ Ningun elemento válido fue encontrado:", error);
     }
 
-    if (isCancelled()) {
-      throw new Error("Ejecución cancelada por el usuario");
-    }
+    // Revisar cancelacion
+    checkCancel();
 
     console.log(`🔄 Elemento no encontrado. Scroll #${scrollCount + 1}`);
 

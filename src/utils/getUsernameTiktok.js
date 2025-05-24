@@ -1,6 +1,6 @@
 import { humanLikeDelay } from "./humanLikeDelay.js";
 import { videoPageSelectors as tiktokVideoSelectors } from "../pages/tiktok/videoPage.js";
-import { isCancelled } from "../cancelManager.js";
+import { checkCancel } from "../cancelManager.js";
 
 const getUsernameTiktok = async (driver) => {
   try {
@@ -10,9 +10,8 @@ const getUsernameTiktok = async (driver) => {
 
     const username = await usernameElement.getText();
 
-    if (isCancelled()) {
-      throw new Error("Ejecución cancelada por el usuario");
-    }
+    // Revisar cancelacion
+    checkCancel();
 
     await humanLikeDelay();
 

@@ -7,7 +7,7 @@ import { stopAppiumServer } from "./stopAppiumServer.js";
 import { openTiktokVideo } from "./openTiktokVideo.js";
 import { goToProfileUserVideos } from "./goToProfileUserVideos.js";
 import { humanLikeDelay } from "./humanLikeDelay.js";
-import { isCancelled } from "../cancelManager.js";
+import { checkCancel } from "../cancelManager.js";
 
 //Funcion para las vistas
 const generateViews = async (
@@ -17,17 +17,15 @@ const generateViews = async (
   port,
   URL_VIDEO_TIKTOK
 ) => {
-  if (isCancelled()) {
-    throw new Error("Ejecución cancelada por el usuario");
-  }
+  // Revisar cancelacion
+  checkCancel();
 
   try {
     for (let i = 0; i < numViews; i++) {
       console.log(`🔄 Scroll ${i + 1}...`);
 
-      if (isCancelled()) {
-        throw new Error("Ejecución cancelada por el usuario");
-      }
+      // Revisar cancelacion
+      checkCancel();
 
       try {
         await driver.pause(getRandomDelay(100, 300));
@@ -45,9 +43,8 @@ const generateViews = async (
         //Intentar reconectar con Appium
         console.log("🔁 Intentando reconectar con Appium...");
 
-        if (isCancelled()) {
-          throw new Error("Ejecución cancelada por el usuario");
-        }
+        // Revisar cancelacion
+        checkCancel();
 
         try {
           // Detener el servidor en el puerto para este proceso
