@@ -5,7 +5,7 @@ import cors from "cors";
 import { iniciarSocketClient } from "./socketClient.js";
 
 const app = express();
-const PORT_HTTP = 5000;
+const PORT_HTTP = process.env.PORT_HTTP || 5000;
 
 // Habilitar CORS
 app.use(cors());

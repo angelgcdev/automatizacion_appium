@@ -36,7 +36,7 @@ const tiktokAutomatizacion = async (
   scheduledTiktokInteractionData,
   activeDevice
 ) => {
-  // Para guardar el historial de la interacción
+  // Objeto para guardar el historial de la interacción
   const history = {
     device_id: activeDevice.device_id,
     username: "",
@@ -146,7 +146,7 @@ const tiktokAutomatizacion = async (
 
     // 👀 Vistas
     if (scheduledTiktokInteractionData.views_count > 0) {
-      const wasGeneratedViews = await generateViews(
+      const { updatedDriver, success } = await generateViews(
         driver,
         scheduledTiktokInteractionData.views_count,
         udid,
@@ -154,10 +154,16 @@ const tiktokAutomatizacion = async (
         scheduledTiktokInteractionData.video_url
       );
 
-      if (wasGeneratedViews) {
+      //Actualizar sesion de appium
+      driver = updatedDriver;
+
+      if (success) {
         history.total_views = scheduledTiktokInteractionData.views_count;
       }
     }
+
+    // Revisar cancelacion
+    checkCancel();
 
     await humanLikeDelay();
 
@@ -168,6 +174,8 @@ const tiktokAutomatizacion = async (
       scheduledTiktokInteraction_id: scheduledTiktokInteractionData.id,
     };
   } catch (error) {
+    console.log("Valor de canceled:", isCanceled());
+
     if (!isCanceled()) {
       // ⚠️ Capturar errores durante la automatización
       console.error(`❌ [${udid}] Error en Appium:`, error);

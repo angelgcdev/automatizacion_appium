@@ -1,6 +1,9 @@
 import adb from "adbkit";
 
-const client = adb.createClient({ host: "127.0.0.1", port: 5037 });
+const client = adb.createClient({
+  host: process.env.ADB_HOST || "127.0.0.1",
+  port: process.env.ADB_PORT || 5037,
+});
 const trackers = new Map(); //clave: user_id, valor: tracker
 
 export function iniciarTrackerDeDispositivos(user_id, socket) {

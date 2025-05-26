@@ -17,6 +17,11 @@ const generateViews = async (
   port,
   URL_VIDEO_TIKTOK
 ) => {
+  // Trackear la sesion actual de appium
+  let updatedDriver = driver;
+  // Estado actual de la ejecucion
+  let success = true;
+
   // Revisar cancelacion
   checkCancel();
 
@@ -54,17 +59,19 @@ const generateViews = async (
           await startAppiumServer(port);
 
           //Conectar nuevamente con appium
-          const newDriver = await connectToAppium(udid, port);
-          if (newDriver) {
-            driver = newDriver;
+          updatedDriver = await connectToAppium(udid, port);
+          if (updatedDriver) {
+            driver = updatedDriver;
             console.log("✅ Reconexión exitosa.");
           }
 
           await humanLikeDelay();
+
           //Abrir nuevamente el video de tiktok
           await openTiktokVideo(driver, URL_VIDEO_TIKTOK);
 
           await humanLikeDelay();
+
           //Ir nuevamente al perfil de videos del usuario
           await goToProfileUserVideos(driver);
         } catch (error) {
@@ -74,12 +81,12 @@ const generateViews = async (
         i = i - 1; // descontar la falla para ser mas preciso en la cantidad de views
       }
     }
-
-    return true;
   } catch (error) {
     console.log("❌ No se generaron las vistas correctamente...", error);
-    return false;
+    success = false;
   }
+
+  return { updatedDriver, success };
 };
 
 export { generateViews };

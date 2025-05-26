@@ -12,7 +12,7 @@ const connectToAppium = async (udid, port) => {
   let driver;
   try {
     driver = await remote({
-      hostname: "127.0.0.1",
+      hostname: process.env.APPIUM_HOST || "127.0.0.1",
       port,
       // path: "/wd/hub", //si usas Appium Server UI
       path: "/", // Appium terminal

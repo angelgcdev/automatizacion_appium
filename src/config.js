@@ -50,10 +50,6 @@ const SELECTORS = {
 
   inputField:
     'android=new UiSelector().resourceId("com.zhiliaoapp.musically:id/cx7")',
-  // '//android.widget.EditText[@text="Añadir comentario..."]',
-  // '(//android.widget.EditText[@resource-id="com.zhiliaoapp.musically:id/cwd"])[2]',
-
-  // textToComment: "De la marca pajaro......🤣🤣😂",
   publicComment: [
     "~Publicar comentario",
     '//android.widget.Button[@content-desc="Publicar comentario"]',
