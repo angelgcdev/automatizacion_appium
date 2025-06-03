@@ -1,6 +1,7 @@
 // 1. Librerías de Node.js
 
 // 2. Librerías de terceros
+import "dotenv/config";
 
 // 3. Librerías internas absolutas
 

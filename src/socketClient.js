@@ -19,7 +19,9 @@ export function iniciarSocketClient(user_id) {
 
   if (!socket) {
     // Configuración del cliente Socket.IO
-    socket = io(process.env.SOCKET_SERVER_URL || "http://localhost:4000"); // ⚠️ Ajustar URL si es necesario
+    socket = io(process.env.SOCKET_SERVER_URL || "http://localhost:4000");
+
+    console.log("Socket server url:", process.env.SOCKET_SERVER_URL);
 
     // Evento de conexión
     socket.on("connect", () => {
