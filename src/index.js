@@ -22,6 +22,7 @@ import { stopAppiumServer } from "./utils/stopAppiumServer.js";
 import { commentOnTiktokVideo } from "./utils/commentOnTiktokVideo.js";
 import { getUsernameTiktok } from "./utils/getUsernameTiktok.js";
 import { resetCancel, checkCancel, isCanceled } from "./cancelManager.js";
+import { formatTime } from "./utils/formatTime.js";
 
 //Iniciar el servidor HTTP
 iniciarHttpServer();
@@ -39,7 +40,7 @@ const tiktokAutomatizacion = async (
 ) => {
   // Objeto para guardar el historial de la interacción
   const history = {
-    device_id: activeDevice.device_id,
+    device_id: activeDevice.id,
     username: "",
     total_views: 0,
     liked: false,
@@ -225,6 +226,45 @@ const runOnMultipleDevices = async (data) => {
   const socket = getSocket();
 
   const { scheduledTiktokInteractionData, activeDevices } = data;
+
+  //Tiempo de inicio
+  const startTime = Date.now();
+
+  //Tiempo total estimado
+  const likedTime = scheduledTiktokInteractionData.liked ? 50 : 0;
+  const savedTime = scheduledTiktokInteractionData.saved ? 50 : 0;
+  const commentTime =
+    scheduledTiktokInteractionData.comment &&
+    scheduledTiktokInteractionData.comment.trim() !== ""
+      ? 250
+      : 0;
+  const viewsTime =
+    scheduledTiktokInteractionData.views_count > 0
+      ? Number(scheduledTiktokInteractionData.views_count) * 1
+      : 0;
+  const extraViewsTime =
+    scheduledTiktokInteractionData.views_count > 100
+      ? Math.floor(Number(scheduledTiktokInteractionData.views_count) / 100) *
+        150
+      : 0;
+
+  const estimatedTotal =
+    50 +
+    90 +
+    30 +
+    likedTime +
+    savedTime +
+    commentTime +
+    viewsTime +
+    extraViewsTime;
+
+  //Emitir tiempo estimado de ejecucion
+  const estimatedTime = formatTime(estimatedTotal);
+
+  socket.emit("schedule:tiktok:estimated_time_all", {
+    estimatedTime,
+    interactionId: scheduledTiktokInteractionData.id,
+  });
 
   try {
     // 🔌 Obtener todos los dispositivos android conectados
