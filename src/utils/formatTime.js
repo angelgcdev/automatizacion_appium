@@ -11,6 +11,6 @@ function formatTime(seconds) {
   return parts.join(" ");
 }
 
-console.log(formatTime(120));
+// console.log(formatTime(120));
 
 export { formatTime };

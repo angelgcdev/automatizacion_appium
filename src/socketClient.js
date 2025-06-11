@@ -31,11 +31,19 @@ export function iniciarSocketClient(user_id) {
       socket.emit("user:register", { user_id });
       console.log(`👤 Usuario ${user_id} registrado en su sala privada`);
 
-      if (!trackerIniciado) {
-        //Empezar a trackear dispositivos
-        iniciarTrackerDeDispositivos(user_id, socket);
-        trackerIniciado = true;
+      // 🔁 Notificar al backend que reinicie el estado de los dispositivos
+      socket.emit("devices:resetStatus", "INACTIVO");
+      console.log(
+        `♻️ Solicitado reset de dispositivos para el usuario ${user_id}`
+      );
+
+      //Reiniciar el tracker siempre al conectar
+      if (trackerIniciado) {
+        detenerTracker(user_id); // Detenemos el anterior
       }
+
+      iniciarTrackerDeDispositivos(user_id, socket);
+      trackerIniciado = true;
     });
 
     //Reconexion
@@ -43,10 +51,18 @@ export function iniciarSocketClient(user_id) {
       console.log("🔁 Reconectado al backend. Re-registrando usuario.");
       socket.emit("user:register", { user_id });
 
-      if (!trackerIniciado) {
-        iniciarTrackerDeDispositivos(user_id, socket);
-        trackerIniciado = true;
+      // 🔁 Notificar al backend que reinicie el estado de los dispositivos
+      socket.emit("devices:resetStatus", "INACTIVO");
+      console.log(
+        `♻️ Solicitado reset de dispositivos para el usuario ${user_id}`
+      );
+
+      //Reiniciar el tracker siempre al reconectar
+      if (trackerIniciado) {
+        detenerTracker(user_id); // Detenemos el anterior
       }
+      iniciarTrackerDeDispositivos(user_id, socket);
+      trackerIniciado = true;
     });
 
     // Evento de desconexión

@@ -25,7 +25,11 @@ export function iniciarTrackerDeDispositivos(user_id, socket) {
             const info = await obtenerInfoDispositivo(device.id);
 
             // Enviar la informacion al servidor
-            socket.emit("device:connected", { ...info, user_id });
+            socket.emit("device:connected", {
+              ...info,
+              user_id,
+              status: "ACTIVO",
+            });
           } catch (err) {
             console.error("Error al obtener info del dispositivo:", err);
           }
@@ -37,7 +41,10 @@ export function iniciarTrackerDeDispositivos(user_id, socket) {
         console.log(`Dispositivo desconectado: ${device.id}`);
 
         setTimeout(() => {
-          socket.emit("device:disconnected", device.id);
+          socket.emit("device:disconnected", {
+            udid: device.id,
+            status: "INACTIVO",
+          });
         }, 1000);
       });
 
