@@ -33,15 +33,15 @@ const generateViews = async (
       checkCancel();
 
       try {
-        await driver.pause(getRandomDelay(100, 300));
+        await driver.pause(getRandomDelay(100, 100));
 
         // Haciendo scroll hacia abajo
         await scrollDown(driver);
-        await driver.pause(getRandomDelay(100, 300)); // Pausa
+        await driver.pause(getRandomDelay(100, 100)); // Pausa
 
         // Haciendo scroll hacia arriba
         await scrollUp(driver);
-        await driver.pause(getRandomDelay(100, 300)); // Pausa
+        await driver.pause(getRandomDelay(100, 100)); // Pausa
       } catch (error) {
         console.error("⚠️ Error en scroll:", error);
 

@@ -1,6 +1,9 @@
 import { checkCancel } from "../cancelManager.js";
 
 const clickSimple = async (driver, selector) => {
+  // Revisar cancelacion
+  checkCancel();
+
   let element;
   try {
     console.log(`Selector usado: ${selector}`);

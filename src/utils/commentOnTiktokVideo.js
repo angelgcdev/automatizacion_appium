@@ -13,9 +13,15 @@ const commentOnTiktokVideo = async (driver, comment) => {
     await clickSimple(driver, tiktokCommentModalSelectors.commentButton);
     await humanLikeDelay();
 
+    // Revisar cancelacion
+    checkCancel();
+
     //hacer click en el input del comentario
     await clickSimple(driver, tiktokCommentModalSelectors.commentInput);
     await humanLikeDelay();
+
+    // Revisar cancelacion
+    checkCancel();
 
     // Escribir el comentario
     await writeInInput(
@@ -25,9 +31,15 @@ const commentOnTiktokVideo = async (driver, comment) => {
     );
     await humanLikeDelay();
 
+    // Revisar cancelacion
+    checkCancel();
+
     // Publicar comentario
     await clickSimple(driver, tiktokCommentModalSelectors.commentPublicButton);
     await humanLikeDelay();
+
+    // Revisar cancelacion
+    checkCancel();
 
     //Cerrar los comentarios
     await clickSimple(driver, tiktokCommentModalSelectors.commentCloseButton);
