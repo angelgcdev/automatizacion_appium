@@ -11,13 +11,10 @@ const goToProfileUserVideos = async (driver) => {
   // Hacer click en la cuenta del usuario tiktok
   await clickSimple(driver, tiktokVideoSelectors.profileName);
 
-  await humanLikeDelay();
-
   //Contar la cantidad de videos del perfil del usuario
   const videos = await driver.$$(tiktokProfileSelectors.listaVideos);
   const cantidadVideos = videos.length;
   console.log(`Número de videos visibles: ${videos.length}`);
-  await humanLikeDelay();
 
   if (cantidadVideos > 1) {
     // Revisar cancelacion
@@ -28,7 +25,6 @@ const goToProfileUserVideos = async (driver) => {
       driver,
       tiktokProfileSelectors.vistoJustoAhoraBtn
     );
-    await humanLikeDelay();
     await driver.pause(5000); // Pausa
 
     if (wasClicked) {
@@ -40,7 +36,6 @@ const goToProfileUserVideos = async (driver) => {
         driver,
         tiktokProfileSelectors.vistoJustoAhoraVideoIcon
       );
-      await humanLikeDelay();
     }
 
     if (!wasClicked) {
@@ -55,11 +50,8 @@ const goToProfileUserVideos = async (driver) => {
         driver,
         tiktokProfileSelectors.vistoJustoAhoraVideoIcon
       );
-
-      await humanLikeDelay();
     }
   } else {
-    await humanLikeDelay();
     // Ir atras
     await driver.back();
 

@@ -9,8 +9,7 @@ const clickSimple = async (driver, selector) => {
     console.log(`Selector usado: ${selector}`);
     element = await driver.$(selector);
 
-    // Pausa corta antes de hacer click
-    await driver.pause(600); //Tiempo recomendado calibrado
+    await element.waitForExist({ timeout: 15000 });
 
     // Revisar cancelacion
     checkCancel();
@@ -27,9 +26,3 @@ const clickSimple = async (driver, selector) => {
 };
 
 export { clickSimple };
-
-//Click fallback
-// // Usar mobile: clickGesture
-// await driver.executeScript("mobile: clickGesture", [
-//   { element: element.elementId },
-// ]);

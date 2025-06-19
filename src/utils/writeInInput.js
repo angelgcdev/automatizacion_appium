@@ -4,15 +4,11 @@ const writeInInput = async (driver, textToComment, selectorField) => {
     console.log("Escribiendo en:", selectorField);
     input = await driver.$(selectorField);
 
-    await driver.pause(600);
+    await input.waitForExist({ timeout: 15000 });
 
     await input.click(); // Enfoca el campo
 
-    await driver.pause(600);
-
-    await input.addValue(textToComment);
-
-    await driver.pause(600);
+    await input.setValue(textToComment);
 
     console.log(`✍ Escribiendo en el input: ${textToComment}`);
   } catch (error) {

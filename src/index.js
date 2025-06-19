@@ -8,7 +8,6 @@ import "dotenv/config";
 // 4. Imports relativos
 import { iniciarHttpServer } from "./httpServer.js";
 import { getSocket } from "./socketClient.js";
-import { humanLikeDelay } from "./utils/humanLikeDelay.js";
 import { generateViews } from "./utils/generateViews.js";
 import { getConnectedDevices } from "./utils/getConnectedDevices.js";
 import { clickSimple } from "./utils/clickSimple.js";
@@ -23,6 +22,8 @@ import { commentOnTiktokVideo } from "./utils/commentOnTiktokVideo.js";
 import { getUsernameTiktok } from "./utils/getUsernameTiktok.js";
 import { resetCancel, checkCancel, isCanceled } from "./cancelManager.js";
 import { formatTime } from "./utils/formatTime.js";
+import { commentModalSelectors as tiktokCommentModalSelectors } from "../src/pages/tiktok/commentModal.js";
+import { killAdbChildProcesses } from "./utils/killAdbChildProcesses.js";
 
 //Iniciar el servidor HTTP
 iniciarHttpServer();
@@ -66,7 +67,6 @@ const tiktokAutomatizacion = async (
     driver = await connectToAppium(udid, port);
 
     console.log(`✅ [${udid}] Conectado a Appium en puerto ${port}.`);
-    await humanLikeDelay();
 
     // Revisar cancelacion
     checkCancel();
@@ -75,7 +75,7 @@ const tiktokAutomatizacion = async (
     await openTiktokVideo(driver, scheduledTiktokInteractionData.video_url);
     history.video_url = scheduledTiktokInteractionData.video_url;
 
-    await humanLikeDelay();
+    await driver.pause(2000);
 
     // Revisar cancelacion
     checkCancel();
@@ -85,8 +85,6 @@ const tiktokAutomatizacion = async (
     if (username) {
       history.username = username;
     }
-
-    await humanLikeDelay();
 
     // Revisar cancelacion
     checkCancel();
@@ -105,8 +103,6 @@ const tiktokAutomatizacion = async (
       }
     }
 
-    await humanLikeDelay();
-
     // Revisar cancelacion
     checkCancel();
 
@@ -122,8 +118,6 @@ const tiktokAutomatizacion = async (
       }
     }
 
-    await humanLikeDelay();
-
     // Revisar cancelacion
     checkCancel();
 
@@ -132,16 +126,18 @@ const tiktokAutomatizacion = async (
       scheduledTiktokInteractionData.comment &&
       scheduledTiktokInteractionData.comment.trim() !== ""
     ) {
-      const wasCommented = await commentOnTiktokVideo(
+      const wasCommented = await commentOnTiktokVideo({
         driver,
-        scheduledTiktokInteractionData.comment
-      );
+        textToComment: scheduledTiktokInteractionData.comment,
+        commentButton: tiktokCommentModalSelectors.commentButton,
+        commentInput: tiktokCommentModalSelectors.commentInput,
+        commentCloseButton: tiktokCommentModalSelectors.commentCloseButton,
+        commentPublicButton: tiktokCommentModalSelectors.commentPublicButton,
+      });
       if (wasCommented) {
         history.commented = scheduledTiktokInteractionData.comment;
       }
     }
-
-    await humanLikeDelay();
 
     // Revisar cancelacion
     checkCancel();
@@ -166,8 +162,6 @@ const tiktokAutomatizacion = async (
 
     // Revisar cancelacion
     checkCancel();
-
-    await humanLikeDelay();
 
     return {
       activeDevice,
@@ -222,6 +216,8 @@ const tiktokAutomatizacion = async (
  * 🔁 Ejecutar en múltiples dispositivos
  */
 const runOnMultipleDevices = async (data) => {
+  await killAdbChildProcesses();
+
   //Obtener la conexion Socket.IO
   const socket = getSocket();
 

@@ -4,46 +4,31 @@ import { writeInInput } from "./writeInInput.js";
 import { commentModalSelectors as tiktokCommentModalSelectors } from "../pages/tiktok/commentModal.js";
 import { checkCancel } from "../cancelManager.js";
 
-const commentOnTiktokVideo = async (driver, comment) => {
+const commentOnTiktokVideo = async (data) => {
   // Revisar cancelacion
   checkCancel();
 
   try {
     //hacer click en el boton comentario
-    await clickSimple(driver, tiktokCommentModalSelectors.commentButton);
-    await humanLikeDelay();
+    await clickSimple(data.driver, data.commentButton);
 
     // Revisar cancelacion
     checkCancel();
 
-    //hacer click en el input del comentario
-    await clickSimple(driver, tiktokCommentModalSelectors.commentInput);
-    await humanLikeDelay();
-
-    // Revisar cancelacion
-    checkCancel();
-
-    // Escribir el comentario
-    await writeInInput(
-      driver,
-      comment,
-      tiktokCommentModalSelectors.commentInputField
-    );
-    await humanLikeDelay();
+    //hacer click en el input de comentarios y escribir
+    await writeInInput(data.driver, data.textToComment, data.commentInput);
 
     // Revisar cancelacion
     checkCancel();
 
     // Publicar comentario
-    await clickSimple(driver, tiktokCommentModalSelectors.commentPublicButton);
-    await humanLikeDelay();
+    await clickSimple(data.driver, data.commentPublicButton);
 
     // Revisar cancelacion
     checkCancel();
 
     //Cerrar los comentarios
-    await clickSimple(driver, tiktokCommentModalSelectors.commentCloseButton);
-    await humanLikeDelay();
+    await clickSimple(data.driver, data.commentCloseButton);
 
     return true;
   } catch (error) {

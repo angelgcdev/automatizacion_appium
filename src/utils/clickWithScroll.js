@@ -16,11 +16,6 @@ const clickWithScroll = async (driver, selector) => {
       // Pausa corta antes de hacer click
       await driver.pause(600); //Tiempo recomendado calibrado
 
-      // // Usar mobile: clickGesture
-      // await driver.executeScript("mobile: clickGesture", [
-      //   { element: element.elementId },
-      // ]);
-
       //hacer click
       await element.click();
 
